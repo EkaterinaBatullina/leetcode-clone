@@ -1,0 +1,5 @@
+rootProject.name = 'user-service'
+include 'user-service-api'
+include 'user-service-db'
+include 'user-service-impl'
+

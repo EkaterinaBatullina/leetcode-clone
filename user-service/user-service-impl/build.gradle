@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+}
+
+group 'com.technokratos'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-validation:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-cache:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp:3.2.4'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor:3.2.4'
+
+    implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.2.7'
+    implementation 'org.springframework.security:spring-security-oauth2-jose:6.2.3'
+    implementation 'org.springframework.security:spring-security-cas:6.2.3'
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+
+    implementation 'org.postgresql:postgresql:42.7.2'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'org.reflections:reflections:0.9.12'
+    implementation 'org.liquibase:liquibase-core:4.25.1'
+
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    implementation 'org.slf4j:slf4j-api:2.0.12'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+    implementation 'com.technokratos:logging-starter:1.0-SNAPSHOT'
+    implementation 'com.technokratos:user-service-api:1.0-SNAPSHOT'
+    implementation 'com.technokratos:user-service-db:1.0-SNAPSHOT'
+    implementation 'com.technokratos:problem-service-api:1.0-SNAPSHOT'
+    implementation 'com.technokratos:submission-service-api:1.0-SNAPSHOT'
+
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+    implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.9'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.4'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    testImplementation 'org.testcontainers:postgresql:1.19.7'
+    testImplementation 'org.mockito:mockito-core:5.3.0'
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-uuid-extension
+      author: Ekaterina Batullina
+      changes:
+        - sql:
+            dbms: postgresql
+            splitStatements: false
+            stripComments: true
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

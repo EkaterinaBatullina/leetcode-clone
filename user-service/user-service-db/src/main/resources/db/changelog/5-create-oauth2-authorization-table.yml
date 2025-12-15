@@ -1,0 +1,174 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-oauth2-authorization-table
+      author: Ekaterina Batullina
+      changes:
+        - createTable:
+            tableName: oauth2_authorization
+            columns:
+              - column:
+                  name: id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: registered_client_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: principal_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: authorization_grant_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: authorized_scopes
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: attributes
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: state
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: authorization_code_value
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: authorization_code_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: authorization_code_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: authorization_code_metadata
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_value
+                  type: varchar(1024)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_metadata
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: access_token_scopes
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: oidc_id_token_value
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: oidc_id_token_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: oidc_id_token_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: oidc_id_token_metadata
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: refresh_token_value
+                  type: varchar(1024)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: refresh_token_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: refresh_token_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: refresh_token_metadata
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_code_value
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_code_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_code_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_code_metadata
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: device_code_value
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: device_code_issued_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: device_code_expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: true
+              - column:
+                  name: device_code_metadata
+                  type: text
+                  constraints:
+                    nullable: true

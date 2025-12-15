@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-admin
+      author: Ekaterina Batullina
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DO $$
+              DECLARE
+                new_user_id UUID := gen_random_uuid();
+              BEGIN
+                INSERT INTO "user"(id, username, email, password, role)
+                VALUES (new_user_id, 'adminUser', 'admin@example.com', '$2a$10$SivUdxEVPAzVP8ZGX0CnFu1GpK/9q2DsCX2Zm5HOQygdKxsdR7HLq', 'ADMIN');
+
+                INSERT INTO statistic(user_id, total_solved_tasks, total_attempts, solved_easy_tasks, solved_medium_tasks, solved_hard_tasks, success_percentage)
+                VALUES (new_user_id, 0, 0, 0, 0, 0, 0);
+              END $$;

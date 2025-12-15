@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-statistic-table
+      author: Ekaterina Batullina
+      changes:
+        - createTable:
+            tableName: statistic
+            columns:
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: total_solved_tasks
+                  type: INT
+              - column:
+                  name: total_attempts
+                  type: INT
+              - column:
+                  name: solved_easy_tasks
+                  type: INT
+              - column:
+                  name: solved_medium_tasks
+                  type: INT
+              - column:
+                  name: solved_hard_tasks
+                  type: INT
+              - column:
+                  name: success_percentage
+                  type: INT
+        - addForeignKeyConstraint:
+            baseTableName: statistic
+            baseColumnNames: user_id
+            referencedTableName: user
+            referencedColumnNames: id
+            constraintName: fk_statistics_user
+            onDelete: CASCADE

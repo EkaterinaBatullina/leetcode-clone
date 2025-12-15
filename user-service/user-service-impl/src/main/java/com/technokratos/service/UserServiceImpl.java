@@ -1,0 +1,121 @@
+package com.technokratos.service;
+
+import com.technokratos.dto.enums.Role;
+import com.technokratos.dto.request.AuthenticationRequest;
+import com.technokratos.dto.request.UserFullRequest;
+import com.technokratos.dto.request.RoleRequest;
+import com.technokratos.dto.request.UserPartialRequest;
+import com.technokratos.dto.response.TokenCoupleResponse;
+import com.technokratos.exception.type.UserNotFoundException;
+import com.technokratos.mapper.UserMapper;
+import com.technokratos.model.UserEntity;
+import com.technokratos.repository.UserRepository;
+import com.technokratos.service.auth.AuthenticationService;
+import com.technokratos.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
+import com.technokratos.dto.response.UserResponse;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+    private final PasswordEncoder passwordEncoder;
+    private final StatisticService statisticService;
+    private final AuthenticationService authenticationService;
+    private final UserRepository repository;
+    private final UserMapper mapper;
+
+    @Override
+    @Cacheable(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
+    public UserResponse getById() {
+        UUID uuid = SecurityUtil.getCurrentUserId();
+        return mapper.toResponse(
+                repository.findById(uuid)
+                        .orElseThrow(() -> new UserNotFoundException(uuid))
+        );
+    }
+
+    @Override
+    @Cacheable(value = "users", key = "#username")
+    public UserResponse getByUsername(String username) {
+        return mapper.toResponse(
+                repository.findByUsername(username)
+                        .orElseThrow(() -> new UserNotFoundException(username))
+        );
+    }
+
+    @Override
+//    @Cacheable(value = "users")
+    public Page<UserResponse> getAll(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public TokenCoupleResponse create(UserFullRequest userFullRequest) {
+        UserEntity userEntity = mapper.toEntity(userFullRequest);
+        String rawPassword = userFullRequest.password();
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        userEntity.setPassword(encodedPassword);
+        userEntity.setRole(Role.USER);
+        UUID uuid = repository.save(userEntity);
+        userEntity.setUuid(uuid);
+        statisticService.create(uuid);
+        return authenticationService.signIn(
+                new AuthenticationRequest(userEntity.getUsername(), rawPassword)
+        );
+    }
+
+    @Override
+    @CacheEvict(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
+    public void delete() {
+        UUID uuid = SecurityUtil.getCurrentUserId();
+        repository.deleteById(uuid);
+    }
+
+    @Override
+    @CacheEvict(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
+    public void update(UserFullRequest userFullRequest) {
+        UUID uuid = SecurityUtil.getCurrentUserId();
+        UserEntity userEntity = repository.findById(uuid)
+                .orElseThrow(() -> new UserNotFoundException(uuid));
+        userEntity = userEntity.toBuilder()
+                .username(userFullRequest.username())
+                .email(userFullRequest.email())
+                .password(passwordEncoder.encode(userFullRequest.password()))
+                .build();
+        repository.update(userEntity);
+    }
+
+    @Override
+    @CacheEvict(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
+    public void patch(UserPartialRequest request) {
+        UUID uuid = SecurityUtil.getCurrentUserId();
+        UserEntity userEntity = repository.findById(uuid)
+                .orElseThrow(() -> new UserNotFoundException(uuid));
+        userEntity = userEntity.toBuilder()
+                .username(request.username() != null ? request.username() : userEntity.getUsername())
+                .email(request.email() != null ? request.email() : userEntity.getEmail())
+                .password(request.password() != null ? passwordEncoder.encode(request.password()) : userEntity.getPassword())
+                .build();
+        repository.update(userEntity);
+    }
+
+    @Override
+    @CacheEvict(value = "users", key = "#uuid")
+    public void updateRole(UUID uuid, RoleRequest roleRequest) {
+        UserEntity userEntity = repository.findById(uuid)
+                .orElseThrow(() -> new UserNotFoundException(uuid));
+        userEntity.setRole(Role.valueOf(roleRequest.role()));
+        repository.updateRole(userEntity);
+    }
+}

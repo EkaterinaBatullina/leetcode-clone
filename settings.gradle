@@ -1,0 +1,5 @@
+rootProject.name = 'leetcode'
+include 'logging-starter'
+include 'user-service:user-service-api'
+include 'user-service:user-service-impl'
+include 'user-service:user-service-db'
