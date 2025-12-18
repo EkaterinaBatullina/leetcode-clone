@@ -35,6 +35,7 @@ springdoc:
 logging:
   level:
     root: INFO
+    org.springdoc: DEBUG
 
 security:
   issuer: ${ISSUER_URL}

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -84,7 +83,7 @@ public class UserRepositoryTest {
 
         val checkQuery = "SELECT username, email, password FROM \"user\" WHERE id = '%s'".formatted(id);
 
-        jdbcTemplate.query(checkQuery, rs -> {
+        jdbcTemplate.query((String) checkQuery, rs -> {
             assertEquals("oldUsername", rs.getString("username"));
             assertEquals("old@example.com", rs.getString("email"));
             assertEquals("oldPassword", rs.getString("password"));
@@ -99,7 +98,7 @@ public class UserRepositoryTest {
                 .build();
         userRepository.update(user);
 
-        jdbcTemplate.query(checkQuery, rs -> {
+        jdbcTemplate.query((String) checkQuery, rs -> {
             assertEquals("newUsername", rs.getString("username"));
             assertEquals("new@example.com", rs.getString("email"));
             assertEquals("newPassword", rs.getString("password"));
