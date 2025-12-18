@@ -1,0 +1,45 @@
+services:
+  user-service:
+    build:
+      context: ./user-service/user-service-impl
+    ports:
+      - "8083:8080"
+    networks:
+      - app-net
+    depends_on:
+      - localRabbitMQ
+      - postgres
+    env_file: leetcode.conf
+
+  localRabbitMQ:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - app-net
+    env_file: leetcode.conf
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    env_file: leetcode.conf
+
+volumes:
+  mongo_data:
+  problem_pg_data:
+  redis_data:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  app-net:
+    driver: bridge
