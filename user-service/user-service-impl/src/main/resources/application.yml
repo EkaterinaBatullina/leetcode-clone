@@ -25,6 +25,8 @@ oauth2:
     my-app:
       client-id: ${OAUTH2_CLIENT_ID}
       client-secret: ${OAUTH2_CLIENT_SECRET}
+    google:
+      client-id: ${GOOGLE_CLIENT_ID}
 
 springdoc:
   api-docs:
