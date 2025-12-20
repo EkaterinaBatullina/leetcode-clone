@@ -1,4 +1,6 @@
-package com.technokratos.exception.type;
+package com.technokratos.exception;
+
+import com.technokratos.exception.NotFoundServiceException;
 
 import java.util.UUID;
 

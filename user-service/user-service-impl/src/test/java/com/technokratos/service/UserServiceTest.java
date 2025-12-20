@@ -7,36 +7,37 @@ import com.technokratos.dto.request.UserFullRequest;
 import com.technokratos.dto.request.UserPartialRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
 import com.technokratos.dto.response.UserResponse;
+import com.technokratos.exception.type.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
 import com.technokratos.model.UserEntity;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.auth.AuthenticationService;
+import com.technokratos.util.SecurityUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
     @InjectMocks
-    UserService userService;
+    UserServiceImpl userService;
     @Mock
     AuthenticationService authenticationService;
     @Mock
@@ -53,19 +54,36 @@ public class UserServiceTest {
         String username = "username";
         String email = "email";
         UUID uuid = UUID.randomUUID();
-        mockAuthentication(uuid);
         UserEntity entity = new UserEntity(uuid, username, email, "password", Role.USER);
         UserResponse expectedResponse = new UserResponse(uuid, username, email, Role.USER.name());
 
         when(mapper.toResponse(entity)).thenReturn(expectedResponse);
         when(userRepository.findById(uuid)).thenReturn(Optional.of(entity));
 
-        UserResponse actualResponse = userService.getById();
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
 
-        assertEquals(actualResponse, expectedResponse);
+            UserResponse actualResponse = userService.getById();
+            assertEquals(expectedResponse, actualResponse);
 
-        verify(mapper).toResponse(entity);
-        verify(userRepository).findById(uuid);
+            verify(mapper).toResponse(entity);
+            verify(userRepository).findById(uuid);
+        }
+    }
+
+    @Test
+    void getById_userNotFound() {
+        UUID uuid = UUID.randomUUID();
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+
+            assertThrows(UserNotFoundException.class, () -> userService.getById());
+
+            verify(userRepository).findById(uuid);
+            verifyNoInteractions(mapper);
+        }
     }
 
     @Test
@@ -84,6 +102,17 @@ public class UserServiceTest {
         assertEquals(actualResponse, expectedResponse);
         verify(mapper).toResponse(entity);
         verify(userRepository).findByUsername(username);
+    }
+
+    @Test
+    void getByUsername_userNotFound() {
+        String username = "nonexistent";
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.getByUsername(username));
+
+        verify(userRepository).findByUsername(username);
+        verifyNoInteractions(mapper);
     }
 
     @Test
@@ -114,10 +143,15 @@ public class UserServiceTest {
     @Test
     void delete() {
         UUID uuid = UUID.randomUUID();
-        mockAuthentication(uuid);
         doNothing().when(userRepository).deleteById(uuid);
-        userService.delete();
-        verify(userRepository).deleteById(uuid);
+
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            userService.delete();
+
+            verify(userRepository).deleteById(uuid);
+        }
     }
 
     @Test
@@ -157,7 +191,6 @@ public class UserServiceTest {
     @Test
     void update() {
         UUID uuid = UUID.randomUUID();
-        mockAuthentication(uuid);
         String username = "username";
         String email = "email";
         String password = "password";
@@ -168,7 +201,11 @@ public class UserServiceTest {
         doNothing().when(userRepository).update(any(UserEntity.class));
         when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
 
-        userService.update(request);
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            userService.update(request);
+        }
 
         verify(userRepository).findById(uuid);
         verify(userRepository).update(any(UserEntity.class));
@@ -176,9 +213,25 @@ public class UserServiceTest {
     }
 
     @Test
+    void update_userNotFound() {
+        UUID uuid = UUID.randomUUID();
+        UserFullRequest request = new UserFullRequest("user", "email", "pass");
+
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+
+            assertThrows(UserNotFoundException.class, () -> userService.update(request));
+
+            verify(userRepository).findById(uuid);
+            verify(userRepository, never()).update(any());
+        }
+    }
+
+    @Test
     void patch() {
         UUID uuid = UUID.randomUUID();
-        mockAuthentication(uuid);
         String username = "username";
         String password = "password";
         UserEntity entity = new UserEntity(uuid, username, null, password, Role.USER);
@@ -188,11 +241,32 @@ public class UserServiceTest {
         doNothing().when(userRepository).update(any(UserEntity.class));
         when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
 
-        userService.patch(request);
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            userService.patch(request);
+        }
 
         verify(userRepository).findById(uuid);
         verify(passwordEncoder).encode(password);
         verify(userRepository).update(any(UserEntity.class));
+    }
+
+    @Test
+    void patch_userNotFound() {
+        UUID uuid = UUID.randomUUID();
+        UserPartialRequest request = new UserPartialRequest("user", "email", "pass");
+
+        try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
+            mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+
+            assertThrows(UserNotFoundException.class, () -> userService.patch(request));
+
+            verify(userRepository).findById(uuid);
+            verify(userRepository, never()).update(any());
+        }
     }
 
     @Test
@@ -210,13 +284,16 @@ public class UserServiceTest {
         verify(userRepository).updateRole(any(UserEntity.class));
     }
 
-    private void mockAuthentication(UUID userId) {
-        Jwt jwt = mock(Jwt.class);
-        Authentication authentication = mock(Authentication.class);
+    @Test
+    void updateRole_userNotFound() {
+        UUID uuid = UUID.randomUUID();
+        RoleRequest request = new RoleRequest(Role.ADMIN.name());
 
-        when(jwt.getSubject()).thenReturn(userId.toString());
-        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(userRepository.findById(uuid)).thenReturn(Optional.empty());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        assertThrows(UserNotFoundException.class, () -> userService.updateRole(uuid, request));
+
+        verify(userRepository).findById(uuid);
+        verify(userRepository, never()).updateRole(any());
     }
 }

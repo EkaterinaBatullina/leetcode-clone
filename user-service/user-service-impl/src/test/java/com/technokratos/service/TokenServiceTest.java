@@ -1,13 +1,15 @@
 package com.technokratos.service;
 
 import com.nimbusds.jose.util.Pair;
+import com.technokratos.config.property.SecurityProperties;
 import com.technokratos.model.UserEntity;
 import com.technokratos.dto.enums.Role;
 import com.technokratos.service.auth.TokenService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -16,7 +18,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,13 +32,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles(profiles = "test")
+@ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
-    @Autowired
+    @InjectMocks
     private TokenService tokenService;
-    @MockBean
+    @Mock
     private JwtEncoder jwtEncoder;
+    @Mock
+    private SecurityProperties properties;
 
     @Test
     void generateTokenId() {
@@ -68,6 +70,7 @@ public class TokenServiceTest {
         when(registeredClient.getScopes()).thenReturn(Set.of("scope1", "scope2"));
         when(registeredClient.getTokenSettings()).thenReturn(tokenSettings);
         when(tokenSettings.getAccessTokenTimeToLive()).thenReturn(Duration.ofHours(1));
+        when(properties.getIssuer()).thenReturn("client-id");
 
         Jwt accessJwt = mock(Jwt.class);
         Jwt refreshJwt = mock(Jwt.class);
@@ -109,5 +112,11 @@ public class TokenServiceTest {
         assertEquals("USER", refreshClaims.getClaim(AUTHORITIES));
         assertEquals(OAuth2ParameterNames.REFRESH_TOKEN, refreshClaims.getClaim(OAuth2ParameterNames.TOKEN_TYPE));
         assertTrue(refreshClaims.getExpiresAt().isAfter(Instant.now()));
+    }
+
+    @Test
+    void createTokenPair_nullUser_throwsException() {
+        RegisteredClient client = mock(RegisteredClient.class);
+        assertThrows(NullPointerException.class, () -> tokenService.createTokenPair(client, null, "tokenId"));
     }
 }

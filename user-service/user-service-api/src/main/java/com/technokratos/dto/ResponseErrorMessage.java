@@ -1,4 +1,4 @@
-package com.technokratos.exception.model;
+package com.technokratos.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,8 +1,8 @@
-package com.technokratos.exception.handler;
+package com.technokratos.handler;
 
-import com.technokratos.exception.model.ResponseErrorMessage;
-import com.technokratos.exception.type.NotFoundServiceException;
-import com.technokratos.exception.type.UserNotFoundException;
+import com.technokratos.dto.ResponseErrorMessage;
+import com.technokratos.exception.NotFoundServiceException;
+import com.technokratos.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

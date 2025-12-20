@@ -1,5 +1,6 @@
-package com.technokratos.validation;
+package com.technokratos.validation.validator;
 
+import com.technokratos.validation.annotation.EnumValue;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

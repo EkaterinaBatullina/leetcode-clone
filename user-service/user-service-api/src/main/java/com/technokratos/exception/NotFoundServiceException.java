@@ -1,4 +1,4 @@
-package com.technokratos.exception.type;
+package com.technokratos.exception;
 
 import org.springframework.http.HttpStatus;
 

@@ -1,54 +1,70 @@
 package com.technokratos.service;
 
 import com.technokratos.dto.response.StatisticResponse;
+import com.technokratos.exception.type.StatisticsNotFoundException;
 import com.technokratos.mapper.StatisticMapper;
 import com.technokratos.model.StatisticEntity;
 import com.technokratos.problemserviceapi.enums.Difficulty;
 import com.technokratos.repository.StatisticRepository;
 import com.technokratos.submissionserviceapi.dto.request.UserUpdateRequest;
 import com.technokratos.submissionserviceapi.enums.SubmissionStatus;
+import com.technokratos.util.SecurityUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles(profiles = "test")
+@ExtendWith(MockitoExtension.class)
 public class StatisticServiceTest {
-    @Autowired
-    StatisticService service;
-    @MockBean
+    @InjectMocks
+    StatisticServiceImpl service;
+    @Mock
     StatisticRepository repository;
-    @MockBean
+    @Mock
     StatisticMapper mapper;
 
     @Test
     void getById() {
         UUID expectedUuid = UUID.randomUUID();
-        mockAuthentication(expectedUuid);
         StatisticEntity statisticEntity =
                 new StatisticEntity(expectedUuid, 0, 0, 0, 0, 0, 0);
         StatisticResponse expectedResponse =
                 new StatisticResponse(expectedUuid, 0, 0, 0, 0, 0, 0);
 
-        when(repository.findById(expectedUuid)).thenReturn(Optional.of(statisticEntity));
-        when(mapper.toResponse(statisticEntity)).thenReturn(expectedResponse);
+        try (MockedStatic<SecurityUtil> utilities = mockStatic(SecurityUtil.class)) {
+            utilities.when(SecurityUtil::getCurrentUserId).thenReturn(expectedUuid);
 
-        StatisticResponse response = service.getById();
+            when(repository.findById(expectedUuid)).thenReturn(Optional.of(statisticEntity));
+            when(mapper.toResponse(statisticEntity)).thenReturn(expectedResponse);
 
-        assertEquals(expectedResponse, response);
-        verify(repository).findById(expectedUuid);
-        verify(mapper).toResponse(statisticEntity);
+            StatisticResponse response = service.getById();
+
+            assertEquals(expectedResponse, response);
+            verify(repository).findById(expectedUuid);
+            verify(mapper).toResponse(statisticEntity);
+        }
+    }
+
+    @Test
+    void getById_notFound() {
+        UUID uuid = UUID.randomUUID();
+        try (MockedStatic<SecurityUtil> utilities = mockStatic(SecurityUtil.class)) {
+            utilities.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+
+            when(repository.findById(uuid)).thenReturn(Optional.empty());
+
+            assertThrows(StatisticsNotFoundException.class, () -> service.getById());
+            verify(repository).findById(uuid);
+        }
     }
 
     @Test
@@ -79,13 +95,15 @@ public class StatisticServiceTest {
         verify(repository).update(statisticEntity);
     }
 
-    private void mockAuthentication(UUID userId) {
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId.toString());
+    @Test
+    void update_notFound() {
+        UUID uuid = UUID.randomUUID();
+        UserUpdateRequest request = new UserUpdateRequest(uuid, Difficulty.EASY, SubmissionStatus.SOLVED, true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(repository.findById(uuid)).thenReturn(Optional.empty());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        assertThrows(StatisticsNotFoundException.class, () -> service.update(request));
+        verify(repository).findById(uuid);
+        verify(repository, never()).update(any());
     }
 }
