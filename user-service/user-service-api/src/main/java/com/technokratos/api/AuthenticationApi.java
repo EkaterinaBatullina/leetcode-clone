@@ -1,6 +1,7 @@
 package com.technokratos.api;
 
 import com.technokratos.dto.request.AuthenticationRequest;
+import com.technokratos.dto.request.GoogleAuthenticationRequest;
 import com.technokratos.dto.request.RefreshTokenRequest;
 import com.technokratos.dto.request.UserFullRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
@@ -80,4 +81,24 @@ public interface AuthenticationApi {
     @SecurityRequirement(name = "bearerAuth")
     @ResponseStatus(HttpStatus.OK)
     TokenCoupleResponse refreshTokens(@RequestBody RefreshTokenRequest request);
+
+    @Operation(
+            summary = "Login via Google",
+            description = "Authenticates a user using a Google OAuth2 token and returns access and refresh tokens",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Login successful, returns access and refresh tokens",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = TokenCoupleResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Invalid Google token")
+            }
+    )
+    @PostMapping("/login/google")
+    @SecurityRequirement(name = "basicAuth")
+    @ResponseStatus(HttpStatus.OK)
+    TokenCoupleResponse loginWithGoogle(@Valid @RequestBody GoogleAuthenticationRequest request);
 }
