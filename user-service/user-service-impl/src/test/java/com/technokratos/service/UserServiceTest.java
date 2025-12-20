@@ -7,7 +7,7 @@ import com.technokratos.dto.request.UserFullRequest;
 import com.technokratos.dto.request.UserPartialRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
 import com.technokratos.dto.response.UserResponse;
-import com.technokratos.exception.UserNotFoundException;
+import com.technokratos.exception.type.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
 import com.technokratos.model.UserEntity;
 import com.technokratos.repository.UserRepository;

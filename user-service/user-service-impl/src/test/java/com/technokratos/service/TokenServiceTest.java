@@ -19,8 +19,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
@@ -68,13 +66,15 @@ public class TokenServiceTest {
         RegisteredClient registeredClient = mock(RegisteredClient.class);
         TokenSettings tokenSettings = mock(TokenSettings.class);
 
+        when(registeredClient.getClientId()).thenReturn("client-id");
         when(registeredClient.getScopes()).thenReturn(Set.of("scope1", "scope2"));
         when(registeredClient.getTokenSettings()).thenReturn(tokenSettings);
         when(tokenSettings.getAccessTokenTimeToLive()).thenReturn(Duration.ofHours(1));
-        when(properties.getIssuer()).thenReturn("http://user-service:8080");
+        when(properties.getIssuer()).thenReturn("client-id");
 
         Jwt accessJwt = mock(Jwt.class);
         Jwt refreshJwt = mock(Jwt.class);
+
         when(jwtEncoder.encode(any(JwtEncoderParameters.class)))
                 .thenReturn(accessJwt)
                 .thenReturn(refreshJwt);
@@ -97,11 +97,7 @@ public class TokenServiceTest {
         JwtClaimsSet refreshClaims = allClaims.get(1);
 
         assertEquals(tokenId, accessClaims.getId());
-        try {
-            assertEquals(new URL("http://user-service:8080"), accessClaims.getIssuer()); // <- здесь важен мок
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        assertEquals("client-id", accessClaims.getClaim("iss"));
         assertEquals(userId.toString(), accessClaims.getSubject());
         assertEquals(Set.of("scope1", "scope2"), accessClaims.getClaim(OAuth2ParameterNames.SCOPE));
         assertEquals("USER", accessClaims.getClaim(AUTHORITIES));
@@ -109,11 +105,7 @@ public class TokenServiceTest {
         assertTrue(accessClaims.getExpiresAt().isAfter(Instant.now()));
 
         assertEquals(tokenId, refreshClaims.getId());
-        try {
-            assertEquals(new URL("http://user-service:8080"), refreshClaims.getIssuer());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        assertEquals("client-id", refreshClaims.getClaim("iss"));
         assertNull(refreshClaims.getSubject());
         assertEquals(Set.of("scope1", "scope2"), refreshClaims.getClaim(OAuth2ParameterNames.SCOPE));
         assertEquals(userId, refreshClaims.getClaim(PROFILE_ID));

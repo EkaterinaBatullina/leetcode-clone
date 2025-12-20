@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.technokratos.util.SecurityConstant.PROFILE_ID;
@@ -34,23 +33,5 @@ public class UserValidationService {
         UUID profileId = UUID.fromString(refreshToken.getClaim(PROFILE_ID));
         return userRepository.findById(profileId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
-
-    public UserEntity getOrCreateUserFromGoogle(String email, String username) {
-        Optional<UserEntity> existingUser = userRepository.findByEmail(email);
-
-        if (existingUser.isPresent()) {
-            return existingUser.get();
-        }
-
-        UserEntity newUser = new UserEntity();
-        newUser.setEmail(email);
-        newUser.setUsername(username);
-        newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-
-        UUID userId = userRepository.save(newUser);
-        newUser.setUuid(userId);
-
-        return newUser;
     }
 }
