@@ -13,6 +13,8 @@ public interface UserRepository {
 
     Optional<UserEntity> findByUsername(String username);
 
+    Optional<UserEntity> findByEmail(String email);
+
     Page<UserEntity> findAll(Pageable pageable);
 
     UUID save(UserEntity userEntity);

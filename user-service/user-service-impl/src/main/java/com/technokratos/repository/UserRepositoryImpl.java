@@ -19,6 +19,7 @@ public class UserRepositoryImpl implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
     private final static String SQL_GET_BY_ID = "SELECT * FROM \"user\" WHERE id = ?";
     private final static String SQL_GET_BY_USERNAME = "SELECT * FROM \"user\" WHERE username = ?";
+    private final static String SQL_GET_BY_EMAIL = "SELECT * FROM \"user\" WHERE email = ?";
     private static final String SQL_GET_ALL_PAGED = "SELECT * FROM \"user\" ORDER BY username LIMIT ? OFFSET ?";
     private static final String SQL_GET_COUNT = "SELECT COUNT(*) FROM \"user\"";
     private final static String SQL_INSERT_USER = "INSERT INTO \"user\" (username, email, password, role) VALUES (?, ?, ?, ?) RETURNING id";
@@ -45,6 +46,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<UserEntity> findByUsername(String username) {
         try (val stream = jdbcTemplate.queryForStream(SQL_GET_BY_USERNAME, rowMapper, username)) {
+            return stream.findAny();
+        }
+    }
+
+    @Override
+    public Optional<UserEntity> findByEmail(String email) {
+        try (val stream = jdbcTemplate.queryForStream(SQL_GET_BY_EMAIL, rowMapper, email)) {
             return stream.findAny();
         }
     }
