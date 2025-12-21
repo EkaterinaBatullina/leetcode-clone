@@ -39,8 +39,8 @@ dependencies {
     implementation 'org.reflections:reflections:0.9.12'
     implementation 'org.liquibase:liquibase-core:4.25.1'
 
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
@@ -69,6 +69,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test:3.2.4'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
     testImplementation 'org.testcontainers:postgresql:1.19.7'
+
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.24.0'
 }
 
 test {

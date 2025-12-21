@@ -1,93 +1,107 @@
-# leetcode
+# Интеграция Google OAuth
 
+# Шаг 1 - Инициализация проекта в Google Cloud
 
+На этом шаге:
+- начало создания проекта в Google Cloud Console, использующегося для интеграции Google OAuth в приложение;
+- Указаны app name (leetcode) — название приложения, отображающееся пользователю при запросе доступа, User support email (batullina2005@gmail.com) — контактный e-mail для вопросов пользователей о согласии на доступ.
 
-## Getting started
+![](docs/screenshot/step1.png)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+# Шаг 2 - Завершение инициализации проекта в Google Cloud
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Заполняя оставшиеся поля, указываем:
+- **Audience** — кто будет использовать приложение, в нашем случае External, приложение будет доступно для всех пользователей Google, а не только для внутрикорпоративных;
+- **Settings** — дополнительные параметры проекта;
+- **Contact Information** — подтверждаем контактные данные для связи с пользователями.
 
-## Add your files
+![](docs/screenshot/step2.jpeg)
 
-* [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+# Шаг 3 - Создание OAuth 2.0 client ID
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/EkaterinaBatullina/leetcode.git
-git branch -M main
-git push -uf origin main
-```
+Создается идентификатор клиента, использующийся для идентификации приложения на серверах Google.
+Указываются:
+- **Application type** — выбрали Web application, приложение работает как веб-сервис;
+- **Name** — указали внутреннее имя клиента (Web client 1), использующееся только в консоли Google;
+- **Authorized redirect URIs** — указываем https://developers.google.com/oauthplayground для тестирования OAuth 2.0-flow.
 
-## Integrate with your tools
+![](docs/screenshot/step3.jpeg)
 
-* [Set up project integrations](https://gitlab.com/EkaterinaBatullina/leetcode/-/settings/integrations)
+# Шаг 4 - Auth client created
 
-## Collaborate with your team
+На этом этапе:
+- получен Client ID, использующийся приложением для идентификации при обращении к Google Auth server;
+- сгенерирован Client Secret, применяемый серверной частью при обмене authorization code на access token;
+- доступ к авторизации ограничен test users, указанными в Auth consent screen;
+- параметры клиента(Client ID и Client Secret) сохранены и далее используются в конфигурации приложения.
 
-* [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+![](docs/screenshot/step4.jpeg)
 
-## Test and Deploy
+# Шаг 5 - OAuth 2.0 Playground — получение authorization code
 
-Use the built-in continuous integration in GitLab.
+Для проверки корректности OAuth-настройки используем Google OAuth 2.0 Playground.
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+На этом этапе:
+- в разделе Use your own Auth credentials указаны ранее созданные OAuth Client ID и Client Secret;
+- в качестве redirect URI используется
+  https://developers.google.com/oauthplayground, добавленный в настройки клиента в Google Cloud Console;
+- выбран Server-side auth flow, соответствующий backend-авторизации;
+- заданы scopes: openid, email, profile, необходимые для получения идентификатора пользователя и базовой информации профиля;
+- выполнена авторизация через Google с отображением consent screen.
 
-***
+Результатом этапа является получение authorization code, использующийся далее для обмена на access и ID token-ы.
 
-# Editing this README
+![](docs/screenshot/step5.jpeg)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+# Шаг 6 - Обмен ранее полученного authorization code на токены доступа
 
-## Suggestions for a good README
+На этом этапе:
+- используется authorization code, полученный на предыдущем шаге;
+- выполняется запрос к Google Token endpoint;
+- в ответ возвращаются access token для доступа к защищённым ресурсам и refresh token, позволяющий получить новый access token без повторной авторизации пользователя.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+OAuth Playground автоматически отзывает refresh tokens через 24 часа, что допустимо для тестовой проверки авторизации и валидации OAuth-конфигурации.
 
-## Name
-Choose a self-explaining name for your project.
+![](docs/screenshot/step6.jpeg)
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+# Шаг 7 - Google Sign-In
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Выбираем Google-аккаунт для аутентификации.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+![](docs/screenshot/step7.jpeg)
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+# Шаг 8 - Подтверждение разрешений для сервиса leetcode
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Разрешаем доступ к следующим данным:
+- Name and profile picture;
+- Email address.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+![](docs/screenshot/step8.jpeg)
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+# Шаг 9 - Получение access id и refresh token-ов
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+На этом этапе:
+- в OAuth 2.0 Playground выполнен обмен authorization code на токены в рамках OAuth 2.0 Authorization Code Flow.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+![](docs/screenshot/step9.jpeg)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+# Шаг 10 - Обмен id token через эндпоинт leetcode
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+На этом этапе:
+- аутентификация пользователя через полученный Google ID Token на стороне backend-приложения;
+- выполнен HTTP POST-запрос на эндпоинт /api/v1/authentication/login/google;
+- в теле запроса передаётся параметр idToken, полученный от Google;
+- выполняется валидация idToken (проверка подписи, issuer, audience);
+- из токена извлекаются данные пользователя (email, name);
+- пользователь ищется в базе данных, либо создаётся при отсутствии;
+- после успешной проверки формируется внутренняя JWT-пара токенов.
 
-## License
-For open source projects, say how it is licensed.
+![](docs/screenshot/step10.jpeg)
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+# Шаг 11 - Аутентификация через полученный access token
+
+![](docs/screenshot/step11.png)
+
+# Шаг 12 - Получение данных пользователя после успешной аутентификации через Google.
+
+![](docs/screenshot/step12.jpeg)

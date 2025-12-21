@@ -98,7 +98,6 @@ public interface AuthenticationApi {
             }
     )
     @PostMapping("/login/google")
-    @SecurityRequirement(name = "basicAuth")
     @ResponseStatus(HttpStatus.OK)
     TokenCoupleResponse loginWithGoogle(@Valid @RequestBody GoogleAuthenticationRequest request);
 }

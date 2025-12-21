@@ -22,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class WebSecurityConfig {
     private static final String[] PERMIT_ALL = {
-            "/api/v1/authentication/*",
+            "/api/v1/authentication/**",
             "/api/v1/users/*",
             "/.well-known/jwks.json",
             "/v3/api-docs/**",

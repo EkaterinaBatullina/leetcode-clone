@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BasicAuthFilter extends OncePerRequestFilter {
     private final RequestMatcher requestMatcher = new OrRequestMatcher(
@@ -30,10 +32,27 @@ public class BasicAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        log.info("Filtering request: {} {}", request.getMethod(), request.getRequestURI());
+        log.info("Authorization header: {}", request.getHeader("Authorization"));
+
+        // Полностью пропускаем Google login
+        if (request.getRequestURI().startsWith("/api/v1/authentication/login/google")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Проверяем только остальные URL, которые в requestMatcher
         if (!requestMatcher.matches(request)) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        if (request.getRequestURI().startsWith("/api/v1/authentication/login/google")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Basic ")) {
             reject(response,"Missing or invalid Authorization header");

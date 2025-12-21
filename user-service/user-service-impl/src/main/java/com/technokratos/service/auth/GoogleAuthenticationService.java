@@ -12,6 +12,7 @@ import com.technokratos.model.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,9 @@ public class GoogleAuthenticationService {
 
     private GoogleIdToken.Payload verifyGoogleToken(String idToken) {
         try {
+            log.info("Starting verification of Google ID token.");
+            log.info("Incoming ID Token: {}", idToken);
+
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     jsonFactory
@@ -49,15 +53,21 @@ public class GoogleAuthenticationService {
                     .setAudience(Collections.singletonList(properties.getClientId()))
                     .build();
 
+            log.info("Verifier created with audience: {}", properties.getClientId());
+
             GoogleIdToken token = verifier.verify(idToken);
+
             if (token == null) {
+                log.error("GoogleIdTokenVerifier returned null! Token could not be verified.");
                 throw new BadCredentialsException("Invalid Google ID token");
             }
 
-            return token.getPayload();
+            GoogleIdToken.Payload payload = token.getPayload();
+
+            return payload;
         } catch (Exception e) {
-            log.warn("Failed to verify Google ID token", e);
-            throw new BadCredentialsException("Invalid Google ID token");
+            log.error("Exception occurred while verifying Google ID token", e);
+            throw new BadCredentialsException("Invalid Google ID token", e);
         }
     }
 
@@ -72,7 +82,7 @@ public class GoogleAuthenticationService {
         String tokenId = tokenService.generateTokenId(user);
         var tokenPair = tokenService.createTokenPair(client, user, tokenId);
 
-        authorizationSaver.save(client, null, tokenId, tokenPair, user.getUsername());
+        authorizationSaver.save(client, AuthorizationGrantType.AUTHORIZATION_CODE, tokenId, tokenPair, user.getUsername());
 
         return new TokenCoupleResponse(
                 tokenPair.getLeft().getTokenValue(),
