@@ -12,6 +12,12 @@ spring:
       maximum-pool-size: 10
   liquibase:
     change-log: classpath:/db/changelog/changelog-master.yml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      client-id: ${SPRING_KAFKA_PRODUCER_CLIENT_ID}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 rsa:
   private-key: ${RSA_PRIVATE_KEY}
