@@ -1,6 +1,6 @@
 package com.technokratos.model;
 
-import com.technokratos.dto.enams.Status;
+import com.technokratos.dto.enums.Status;
 import com.technokratos.event.UserRegisteredEvent;
 import lombok.Builder;
 import lombok.Data;

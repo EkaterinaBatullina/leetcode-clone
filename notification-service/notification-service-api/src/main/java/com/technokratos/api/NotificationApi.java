@@ -1,12 +1,13 @@
 package com.technokratos.api;
 
-import com.technokratos.dto.enams.Status;
+import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.response.NotificationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;

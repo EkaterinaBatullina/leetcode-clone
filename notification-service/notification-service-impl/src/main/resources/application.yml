@@ -1,14 +1,29 @@
 spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID}
-      auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET}
-      enable-auto-commit: ${SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT}
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.JsonDeserializer
-      trusted-packages: com.technokratos
-      default-type: com.technokratos.event.UserRegisteredEvent
+    group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID}
+    auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET}
+    enable-auto-commit: ${SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT}
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-deserializer: org.apache.kafka.common.serialization.JsonDeserializer
+    value-serializer: org.apache.kafka.common.serialization.JsonSerializer
+    trusted-packages: com.technokratos
+    default-type: com.technokratos.event.UserRegisteredEvent
+    client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID}
+    topic:
+      user-registered: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}?authSource=${MONGO_DATABASE}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+        mail.smtp.auth: true
+        mail.smtp.starttls.enable: true
 
 springdoc:
   api-docs:

@@ -3,7 +3,7 @@ package com.technokratos.service;
 import com.technokratos.dto.response.NotificationResponse;
 import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.model.Notification;
-import com.technokratos.dto.enams.Status;
+import com.technokratos.dto.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

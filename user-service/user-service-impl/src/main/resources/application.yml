@@ -14,10 +14,10 @@ spring:
     change-log: classpath:/db/changelog/changelog-master.yml
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
-    producer:
-      client-id: ${SPRING_KAFKA_PRODUCER_CLIENT_ID}
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    client-id: ${SPRING_KAFKA_PRODUCER_USER_SERVICE_CLIENT_ID}
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    user-registered-topic: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
 
 rsa:
   private-key: ${RSA_PRIVATE_KEY}

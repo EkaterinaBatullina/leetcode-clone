@@ -4,7 +4,7 @@ import com.technokratos.dto.response.NotificationResponse;
 import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.mapper.NotificationMapper;
 import com.technokratos.model.Notification;
-import com.technokratos.dto.enams.Status;
+import com.technokratos.dto.enums.Status;
 import com.technokratos.repository.NotificationRepository;
 import com.technokratos.sender.EmailSender;
 import lombok.RequiredArgsConstructor;

@@ -9,6 +9,7 @@ import com.technokratos.dto.response.TokenCoupleResponse;
 import com.technokratos.exception.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
 import com.technokratos.model.UserEntity;
+import com.technokratos.producer.KafkaProducer;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.auth.AuthenticationService;
 import com.technokratos.util.SecurityUtil;
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final StatisticService statisticService;
     private final AuthenticationService authenticationService;
+    private final KafkaProducer producer;
     private final UserRepository repository;
     private final UserMapper mapper;
 
@@ -54,7 +56,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-//    @Cacheable(value = "users")
     public Page<UserResponse> getAll(Pageable pageable) {
         return repository.findAll(pageable).map(mapper::toResponse);
     }
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService {
         UUID uuid = repository.save(userEntity);
         userEntity.setUuid(uuid);
         statisticService.create(uuid);
+        producer.publishEvent(uuid, userEntity.getUsername(), userEntity.getEmail());
         return authenticationService.signIn(
                 new AuthenticationRequest(userEntity.getUsername(), rawPassword)
         );

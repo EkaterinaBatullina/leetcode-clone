@@ -1,7 +1,6 @@
 package com.technokratos.config;
 
-
-import com.technokratos.config.property.KafkaConsumerProperties;
+import com.technokratos.config.property.KafkaProperties;
 import com.technokratos.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -11,6 +10,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
@@ -20,7 +20,7 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
-    private final KafkaConsumerProperties kafkaProperties;
+    private final KafkaProperties kafkaProperties;
 
     @Bean
     public Map<String, Object> consumerConfig() {
@@ -36,8 +36,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<Long, UserRegisteredEvent> consumerFactory() {
-        DefaultKafkaConsumerFactory<Long, UserRegisteredEvent> factory =
+    public ConsumerFactory<String, UserRegisteredEvent> consumerFactory() {
+        DefaultKafkaConsumerFactory<String, UserRegisteredEvent> factory =
                 new DefaultKafkaConsumerFactory<>(consumerConfig());
         ErrorHandlingDeserializer<UserRegisteredEvent> errorHandlingDeserializer =
                 new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserRegisteredEvent.class));
@@ -47,9 +47,11 @@ public class KafkaConsumerConfig {
 
     @Bean
     public KafkaListenerContainerFactory<?> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<Long, UserRegisteredEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.getContainerProperties()
+                .setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
     }
 }

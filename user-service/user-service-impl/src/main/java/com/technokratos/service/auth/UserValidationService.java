@@ -3,6 +3,7 @@ package com.technokratos.service.auth;
 import com.technokratos.dto.enums.Role;
 import com.technokratos.dto.request.AuthenticationRequest;
 import com.technokratos.model.UserEntity;
+import com.technokratos.producer.KafkaProducer;
 import com.technokratos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import static com.technokratos.util.SecurityConstant.PROFILE_ID;
 @Service
 @RequiredArgsConstructor
 public class UserValidationService {
+    private final KafkaProducer producer;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -59,6 +61,7 @@ public class UserValidationService {
         newUser.setUuid(userId);
         log.info("Created new user with UUID: {}", userId);
 
+        producer.publishEvent(userId, username, email);
         return newUser;
     }
 }
