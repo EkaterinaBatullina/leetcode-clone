@@ -7,7 +7,7 @@
 - начало создания проекта в Google Cloud Console, использующегося для интеграции Google OAuth в приложение;
 - Указаны app name (leetcode) — название приложения, отображающееся пользователю при запросе доступа, User support email (batullina2005@gmail.com) — контактный e-mail для вопросов пользователей о согласии на доступ.
 
-![](screenshot/step1.png)
+![](screenshot/google-auth-screenshot/step1.png)
 
 
 # Шаг 2 - Завершение инициализации проекта в Google Cloud
@@ -17,7 +17,7 @@
 - **Settings** — дополнительные параметры проекта;
 - **Contact Information** — подтверждаем контактные данные для связи с пользователями.
 
-![](screenshot/step2.jpeg)
+![](screenshot/google-auth-screenshot/step2.jpeg)
 
 
 # Шаг 3 - Создание OAuth 2.0 client ID
@@ -28,7 +28,7 @@
 - **Name** — указали внутреннее имя клиента (Web client 1), использующееся только в консоли Google;
 - **Authorized redirect URIs** — указываем https://developers.google.com/oauthplayground для тестирования OAuth 2.0-flow.
 
-![](screenshot/step3.jpeg)
+![](screenshot/google-auth-screenshot/step3.jpeg)
 
 
 # Шаг 4 - Auth client created
@@ -39,7 +39,7 @@
 - доступ к авторизации ограничен test users, указанными в Auth consent screen;
 - параметры клиента(Client ID и Client Secret) сохранены и далее используются в конфигурации приложения.
 
-![](screenshot/step4.jpeg)
+![](screenshot/google-auth-screenshot/step4.jpeg)
 
 
 # Шаг 5 - OAuth 2.0 Playground — получение authorization code
@@ -56,7 +56,7 @@
 
 Результатом этапа является получение authorization code, использующийся далее для обмена на access и ID token-ы.
 
-![](screenshot/step5.jpeg)
+![](screenshot/google-auth-screenshot/step5.jpeg)
 
 
 # Шаг 6 - Обмен ранее полученного authorization code на токены доступа
@@ -68,14 +68,14 @@
 
 OAuth Playground автоматически отзывает refresh tokens через 24 часа, что допустимо для тестовой проверки авторизации и валидации OAuth-конфигурации.
 
-![](screenshot/step6.jpeg)
+![](screenshot/google-auth-screenshot/step6.jpeg)
 
 
 # Шаг 7 - Google Sign-In
 
 Выбираем Google-аккаунт для аутентификации.
 
-![](screenshot/step7.jpeg)
+![](screenshot/google-auth-screenshot/step7.jpeg)
 
 
 # Шаг 8 - Подтверждение разрешений для сервиса leetcode
@@ -84,7 +84,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 - Name and profile picture;
 - Email address.
 
-![](screenshot/step8.jpeg)
+![](screenshot/google-auth-screenshot/step8.jpeg)
 
 
 # Шаг 9 - Получение access id и refresh token-ов
@@ -92,7 +92,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 На этом этапе:
 - в OAuth 2.0 Playground выполнен обмен authorization code на токены в рамках OAuth 2.0 Authorization Code Flow.
 
-![](screenshot/step9.jpeg)
+![](screenshot/google-auth-screenshot/step9.jpeg)
 
 
 # Шаг 10 - Обмен id token через эндпоинт leetcode
@@ -106,19 +106,19 @@ OAuth Playground автоматически отзывает refresh tokens че
 - пользователь ищется в базе данных, либо создаётся при отсутствии;
 - после успешной проверки формируется внутренняя JWT-пара токенов.
 
-![](screenshot/step10.jpeg)
+![](screenshot/google-auth-screenshot/step10.jpeg)
 
 
 # Шаг 11 - Аутентификация через полученный access token
 
-![](screenshot/step11.png)
+![](screenshot/google-auth-screenshot/step11.png)
 
 
 # Шаг 12 - Получение данных пользователя после успешной аутентификации через Google
 
-![](screenshot/step12.jpeg)
+![](screenshot/google-auth-screenshot/step12.jpeg)
 
 
 # Шаг 13 - Просмотр декодированного Google token
 
-![](screenshot/step13.png)
+![](screenshot/google-auth-screenshot/step13.png)
