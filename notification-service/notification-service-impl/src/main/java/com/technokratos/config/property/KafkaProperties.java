@@ -9,10 +9,10 @@ public class KafkaProperties {
     private String bootstrapServers;
     private String groupId;
     private String clientId;
-    private String keyDeserializer;
-    private String keySerializer;
-    private String valueDeserializer;
-    private String valueSerializer;
+    private Class<?> keySerializer;
+    private Class<?> valueSerializer;
+    private Class<?> keyDeserializer;
+    private Class<?> valueDeserializer;
     private String defaultType;
     private String trustedPackages;
     private boolean enableAutoCommit;

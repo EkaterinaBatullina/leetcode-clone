@@ -19,7 +19,7 @@ public class KafkaConsumer {
 
     @RetryableTopic(
             kafkaTemplate = "kafkaTemplate",
-            backoff = @Backoff(delay = 1000, multiplier = 2, maxDelay = 5000)
+            backoff = @Backoff(delay = 10, multiplier = 1, maxDelay = 50)
     )
     @KafkaListener(topics = "${spring.kafka.topic.user-registered}",
             containerFactory = "kafkaListenerContainerFactory")
