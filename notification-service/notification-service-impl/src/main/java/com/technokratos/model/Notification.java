@@ -23,7 +23,7 @@ public class Notification {
     @Indexed
     private Status status;
     private Instant createdAt;
-    private UserRegisteredEvent eventPayload;
+    private String username;
     private String errorType;
     private String errorMessage;
 }

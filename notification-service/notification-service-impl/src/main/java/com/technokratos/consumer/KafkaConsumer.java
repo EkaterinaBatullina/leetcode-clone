@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +39,16 @@ public class KafkaConsumer {
             groupId = "notification-dlt-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void consumeDLQ(UserRegisteredEvent event) {
-        log.error("Failed to process UserRegisteredEvent after retries: {}", event);
+    public void consumeDLQ(UserRegisteredEvent event,
+                           @Header(KafkaHeaders.DLT_EXCEPTION_MESSAGE) String errorMessage,
+                           @Header(KafkaHeaders.DLT_EXCEPTION_FQCN) String errorClass,
+                           @Header(KafkaHeaders.DLT_ORIGINAL_TOPIC) String originalTopic) {
+        log.error(
+                "DLT event failed. topic={}, userId={}, error={}, message={}",
+                originalTopic,
+                event.userId(),
+                errorClass,
+                errorMessage
+        );
     }
 }

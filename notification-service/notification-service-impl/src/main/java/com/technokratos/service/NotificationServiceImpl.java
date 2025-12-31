@@ -32,7 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .email(event.email())
                 .status(Status.PENDING)
                 .createdAt(Instant.now())
-                .eventPayload(event)
+                .username(event.username())
                 .build();
         return repository.save(notification);
     }
@@ -44,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             sender.send(notification.getEmail(),
                     "Welcome!",
-                    "Hello %s".formatted(notification.getEventPayload().username()));
+                    "Hello %s".formatted(notification.getUsername()));
             notification.setStatus(Status.SAVE);
             log.info("Notification sent successfully to userId={}", notification.getUserId());
         } catch (Exception e) {

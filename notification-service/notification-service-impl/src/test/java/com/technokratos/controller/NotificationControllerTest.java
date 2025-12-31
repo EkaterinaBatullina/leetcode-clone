@@ -75,18 +75,21 @@ public class NotificationControllerTest {
         Notification notification1 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
+                .username("testUsername1")
                 .email("test1@gmail.com")
                 .status(Status.SAVE)
                 .build();
         Notification notification2 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
+                .username("testUsername2")
                 .email("test2@gmail.com")
                 .status(Status.SAVE)
                 .build();
         Notification notification3 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
+                .username("testUsername3")
                 .email("test3@gmail.com")
                 .status(Status.PENDING)
                 .build();
@@ -117,10 +120,12 @@ public class NotificationControllerTest {
     @Test
     void getAllByUserId_success() {
         UUID expectedUserId = UUID.randomUUID();
+        String expectedUsername = "testUsername";
         String expectedEmail = "test@gmail.com";
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(expectedUserId)
+                .username(expectedUsername)
                 .email(expectedEmail)
                 .status(Status.SAVE)
                 .build();
@@ -139,6 +144,7 @@ public class NotificationControllerTest {
         assertNotNull(response.getBody());
         assertFalse(response.getBody().getContent().isEmpty());
         assertEquals(1, response.getBody().getContent().size());
+        assertEquals(expectedUsername, response.getBody().getContent().get(0).username());
         assertEquals(expectedEmail, response.getBody().getContent().get(0).email());
     }
 }

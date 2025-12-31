@@ -37,13 +37,14 @@ public class NotificationServiceTest {
 
     @Test
     void saveUserRegisteredEvent_success() {
-        UUID userId = UUID.randomUUID();
-        String email = "test@gmail.com";
+        UUID expectedUserId = UUID.randomUUID();
+        String expectedEmail = "test@gmail.com";
+        String expectedUsername = "testUsername";
         UserRegisteredEvent event = new UserRegisteredEvent(
                 UUID.randomUUID(),
-                userId,
-                "testUsername",
-                email
+                expectedUserId,
+                expectedUsername,
+                expectedEmail
         );
 
         when(repository.save(any(Notification.class)))
@@ -52,9 +53,9 @@ public class NotificationServiceTest {
         Notification actualNotification = service.saveUserRegisteredEvent(event);
 
         assertNotNull(actualNotification);
-        assertEquals(actualNotification.getUserId(), userId);
-        assertEquals(actualNotification.getStatus(), Status.PENDING);
-        assertEquals(actualNotification.getEventPayload(), event);
+        assertEquals(expectedUserId, actualNotification.getUserId());
+        assertEquals(Status.PENDING, actualNotification.getStatus());
+        assertEquals(expectedEmail, actualNotification.getEmail());
 
         verify(repository).save(any(Notification.class));
     }
@@ -77,66 +78,64 @@ public class NotificationServiceTest {
 
     @Test
     void sendWelcomeNotification_success() {
-        UUID userId = UUID.randomUUID();
-        String email = "test@gmail.com";
-        UserRegisteredEvent event = new UserRegisteredEvent(
-                UUID.randomUUID(),
-                userId,
-                "testUsername",
-                email
-        );
+        UUID expectedUserId = UUID.randomUUID();
+        String expectedEmail = "test@gmail.com";
+        String expectedUsername = "testUsername";
+
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID().toString())
-                .userId(userId)
-                .email(email)
+                .userId(expectedUserId)
+                .email(expectedEmail)
                 .status(Status.PENDING)
-                .eventPayload(event)
+                .username(expectedUsername)
                 .build();
 
         doNothing().when(sender).send(notification.getEmail(),
-                "Welcome!", "Hello %s".formatted(notification.getEventPayload().username()));
+                "Welcome!", "Hello %s".formatted(notification.getUsername()));
         when(repository.save(any(Notification.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         service.sendWelcomeNotification(notification);
 
         assertNotNull(notification);
+        assertEquals(expectedUserId, notification.getUserId());
+        assertEquals(expectedUsername, notification.getUsername());
+        assertEquals(expectedEmail, notification.getEmail());
         assertEquals(Status.SAVE, notification.getStatus());
 
         verify(sender).send(notification.getEmail(),
-                "Welcome!", "Hello %s".formatted(notification.getEventPayload().username()));
+                "Welcome!", "Hello %s".formatted(notification.getUsername()));
         verify(repository).save(any(Notification.class));
     }
 
     @Test
     void sendWelcomeNotification_senderThrowsException() {
-        UUID userId = UUID.randomUUID();
-        String email = "test@gmail.com";
-        UserRegisteredEvent event = new UserRegisteredEvent(
-                UUID.randomUUID(),
-                userId,
-                "testUsername",
-                email
-        );
+        UUID expectedUserId = UUID.randomUUID();
+        String expectedEmail = "test@gmail.com";
+        String expectedUsername = "testUsername";
+
         Notification notification = Notification.builder()
                 .id(UUID.randomUUID().toString())
-                .userId(UUID.randomUUID())
-                .email(email)
+                .userId(expectedUserId)
+                .email(expectedEmail)
                 .status(Status.PENDING)
-                .eventPayload(event)
+                .username(expectedUsername)
                 .build();
 
         doThrow(RuntimeException.class).when(sender).send(notification.getEmail(),
-                "Welcome!",  "Hello %s".formatted(notification.getEventPayload().username()));
+                "Welcome!",  "Hello %s".formatted(notification.getUsername()));
         when(repository.save(any(Notification.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         service.sendWelcomeNotification(notification);
 
-        assertEquals(notification.getStatus(), Status.FAIL);
+        assertEquals(expectedUserId, notification.getUserId());
+        assertEquals(expectedUsername, notification.getUsername());
+        assertEquals(expectedEmail, notification.getEmail());
+        assertEquals(Status.FAIL, notification.getStatus());
 
         verify(sender).send(notification.getEmail(),
-                "Welcome!",  "Hello %s".formatted(notification.getEventPayload().username()));
+                "Welcome!",  "Hello %s".formatted(notification.getUsername()));
         verify(repository).save(any(Notification.class));
     }
 
@@ -146,6 +145,7 @@ public class NotificationServiceTest {
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
                 .email("test@gmail.com")
+                .username("testUsername")
                 .status(Status.PENDING)
                 .build();
 
@@ -158,17 +158,21 @@ public class NotificationServiceTest {
 
     @Test
     void getAllByStatus_success() {
+        String expectedUsername1 = "testUsername1";
+        String expectedUsername2 = "testUsername2";
         String expectedEmail1 = "test1@gmail.com";
         String expectedEmail2 = "test2@gmail.com";
         Notification notification1 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
+                .username(expectedUsername1)
                 .email(expectedEmail1)
                 .status(Status.SAVE)
                 .build();
         Notification notification2 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(UUID.randomUUID())
+                .username(expectedUsername2)
                 .email(expectedEmail2)
                 .status(Status.SAVE)
                 .build();
@@ -182,12 +186,12 @@ public class NotificationServiceTest {
 
         when(repository.findByStatus(Status.SAVE, pageable)).thenReturn(notificationPage);
         when(mapper.toResponse(notification1)).thenReturn(new NotificationResponse(
-                notification1.getId(),
+                notification1.getUsername(),
                 notification1.getEmail(),
                 notification1.getStatus(),
                 notification1.getCreatedAt()));
         when(mapper.toResponse(notification2)).thenReturn(new NotificationResponse(
-                notification2.getId(),
+                notification2.getUsername(),
                 notification2.getEmail(),
                 notification2.getStatus(),
                 notification2.getCreatedAt()));
@@ -196,6 +200,8 @@ public class NotificationServiceTest {
 
         assertNotNull(notificationResponsePage);
         assertEquals(2, notificationResponsePage.getContent().size());
+        assertEquals(expectedUsername1, notificationResponsePage.getContent().get(0).username());
+        assertEquals(expectedUsername2, notificationResponsePage.getContent().get(1).username());
         assertEquals(expectedEmail1, notificationResponsePage.getContent().get(0).email());
         assertEquals(expectedEmail2, notificationResponsePage.getContent().get(1).email());
 
@@ -219,16 +225,19 @@ public class NotificationServiceTest {
     @Test
     void getAllByUserId_success() {
         UUID userId = UUID.randomUUID();
+        String expectedUsername = "testUsername";
         String expectedEmail = "test1@gmail.com";
         Notification notification1 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(userId)
+                .username(expectedUsername)
                 .email(expectedEmail)
                 .status(Status.SAVE)
                 .build();
         Notification notification2 = Notification.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(userId)
+                .username(expectedUsername)
                 .email(expectedEmail)
                 .status(Status.SAVE)
                 .build();
@@ -243,12 +252,12 @@ public class NotificationServiceTest {
 
         when(repository.findByUserId(userId, pageable)).thenReturn(notificationPage);
         when(mapper.toResponse(notification1)).thenReturn(new NotificationResponse(
-                notification1.getId(),
+                notification1.getUsername(),
                 notification1.getEmail(),
                 notification1.getStatus(),
                 notification1.getCreatedAt()));
         when(mapper.toResponse(notification2)).thenReturn(new NotificationResponse(
-                notification2.getId(),
+                notification2.getUsername(),
                 notification2.getEmail(),
                 notification2.getStatus(),
                 notification2.getCreatedAt()));
@@ -257,6 +266,8 @@ public class NotificationServiceTest {
 
         assertNotNull(notificationResponsePage);
         assertEquals(2, notificationResponsePage.getContent().size());
+        assertEquals(expectedUsername, notificationResponsePage.getContent().get(0).username());
+        assertEquals(expectedUsername, notificationResponsePage.getContent().get(1).username());
         assertEquals(expectedEmail, notificationResponsePage.getContent().get(0).email());
         assertEquals(expectedEmail, notificationResponsePage.getContent().get(1).email());
 
