@@ -97,7 +97,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./monitoring/grafana:/etc/grafana/provisioning
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - prometheus
     networks:
@@ -110,6 +111,7 @@ volumes:
   kafka_data:
   postgres_data:
   rabbitmq_data:
+  grafana_data:
 
 networks:
   app-net:

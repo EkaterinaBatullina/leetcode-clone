@@ -47,3 +47,9 @@ logging:
 
 security:
   issuer: ${ISSUER_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info
