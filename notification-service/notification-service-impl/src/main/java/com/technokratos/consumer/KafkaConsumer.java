@@ -33,9 +33,9 @@ public class KafkaConsumer {
             log.info("Successfully processed UserRegisteredEvent for userId: {}, email: {}",
                     event.userId(),
                     event.email());
+            ack.acknowledge();
         } catch (DuplicateEventException e) {
             log.info("Skipping duplicate notification for event: {}", event.eventId());
-        } finally {
             ack.acknowledge();
         }
     }
