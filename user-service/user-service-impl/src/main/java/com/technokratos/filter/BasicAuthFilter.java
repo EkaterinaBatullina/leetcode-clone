@@ -36,24 +36,7 @@ public class BasicAuthFilter extends OncePerRequestFilter {
         log.info("Filtering request: {} {}", request.getMethod(), request.getRequestURI());
         log.info("Authorization header: {}", request.getHeader("Authorization"));
 
-        if (request.getRequestURI().startsWith("/actuator")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Полностью пропускаем Google login
-        if (request.getRequestURI().startsWith("/api/v1/authentication/login/google")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Проверяем только остальные URL, которые в requestMatcher
         if (!requestMatcher.matches(request)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (request.getRequestURI().startsWith("/api/v1/authentication/login/google")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -34,7 +34,7 @@ public class AuthenticationService {
         return new TokenCoupleResponse(tokenPair.getLeft().getTokenValue(), tokenPair.getRight().getTokenValue());
     }
 
-    public TokenCoupleResponse refreshTokens(@NotBlank String refreshToken) {
+    public TokenCoupleResponse refreshTokens(String refreshToken) {
         Jwt verifiedToken = jwtDecoder.decode(refreshToken);
         RegisteredClient client = clientValidationService.getAndValidateRefreshClient();
         clientValidationService.checkGrantType(client, AuthorizationGrantType.REFRESH_TOKEN);

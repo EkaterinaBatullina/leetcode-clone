@@ -60,12 +60,12 @@ public class TokenService {
         UUID profileId = userEntity.getUuid();
         String role = userEntity.getRole().name();
         Set<String> scopes = registeredClient.getScopes();
-        long accessTokenTtl = registeredClient.getTokenSettings().getAccessTokenTimeToLive().toMillis();
+        long refreshTokenTtl = registeredClient.getTokenSettings().getRefreshTokenTimeToLive().toMillis();
         JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
                 .id(tokenId)
                 .issuer(properties.getIssuer())
                 .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plusMillis(accessTokenTtl))
+                .expiresAt(Instant.now().plusMillis(refreshTokenTtl))
                 .claim(OAuth2ParameterNames.SCOPE, scopes)
                 .claim(PROFILE_ID, profileId)
                 .claim(AUTHORITIES, role)
