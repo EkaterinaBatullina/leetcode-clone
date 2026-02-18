@@ -1,6 +1,7 @@
 package com.technokratos.consumer;
 
 import com.technokratos.event.UserRegisteredEvent;
+import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.model.Notification;
 import com.technokratos.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,17 @@ public class KafkaConsumer {
     @KafkaListener(topics = "${spring.kafka.topic.user-registered}",
             containerFactory = "kafkaListenerContainerFactory")
     public void consumeUserRegisteredEvent(UserRegisteredEvent event, Acknowledgment ack) {
-        Notification notification = service.saveUserRegisteredEvent(event);
-        service.sendWelcomeNotification(notification);
-        log.info("Successfully processed UserRegisteredEvent for userId: {}, email: {}",
-                event.userId(),
-                event.email());
-        ack.acknowledge();
+        try {
+            Notification notification = service.saveUserRegisteredEvent(event);
+            service.sendWelcomeNotification(notification);
+            log.info("Successfully processed UserRegisteredEvent for userId: {}, email: {}",
+                    event.userId(),
+                    event.email());
+        } catch (DuplicateEventException e) {
+            log.info("Skipping duplicate notification for event: {}", event.eventId());
+        } finally {
+            ack.acknowledge();
+        }
     }
 
     @KafkaListener(

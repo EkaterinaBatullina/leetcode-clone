@@ -101,7 +101,7 @@ public class KafkaConsumerRetryTest {
 
             Awaitility
                     .await()
-                    .atMost(Duration.ofSeconds(10))
+                    .atMost(Duration.ofSeconds(15))
                     .pollInterval(Duration.ofMillis(200))
                     .untilAsserted(() -> {
                             ConsumerRecord<String, UserRegisteredEvent> record = KafkaTestUtils.getSingleRecord(

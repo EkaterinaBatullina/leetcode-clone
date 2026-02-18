@@ -2,6 +2,7 @@ package com.technokratos.service;
 
 import com.technokratos.dto.response.NotificationResponse;
 import com.technokratos.event.UserRegisteredEvent;
+import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.mapper.NotificationMapper;
 import com.technokratos.model.Notification;
 import com.technokratos.dto.enums.Status;
@@ -10,6 +11,7 @@ import com.technokratos.sender.EmailSender;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,13 +32,19 @@ public class NotificationServiceImpl implements NotificationService {
     public Notification saveUserRegisteredEvent(UserRegisteredEvent event) {
         log.info("Saving notification event for userId={} email={}", event.userId(), event.email());
         Notification notification = Notification.builder()
+                .id(event.eventId().toString())
                 .userId(event.userId())
                 .email(event.email())
                 .status(Status.PENDING)
                 .createdAt(Instant.now())
                 .username(event.username())
                 .build();
-        return repository.save(notification);
+        try {
+            return repository.insert(notification);
+        } catch (DuplicateKeyException e) {
+            log.warn("Duplicate event detected: eventId = {}. Skipping processing", event.eventId());
+            throw new DuplicateEventException("Event already processed");
+        }
     }
 
     @Override

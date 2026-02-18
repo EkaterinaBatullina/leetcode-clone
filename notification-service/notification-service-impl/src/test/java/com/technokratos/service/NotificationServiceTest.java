@@ -3,6 +3,7 @@ package com.technokratos.service;
 import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.response.NotificationResponse;
 import com.technokratos.event.UserRegisteredEvent;
+import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.mapper.NotificationMapper;
 import com.technokratos.model.Notification;
 import com.technokratos.repository.NotificationRepository;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -37,43 +39,47 @@ public class NotificationServiceTest {
 
     @Test
     void saveUserRegisteredEvent_success() {
+        UUID expectedEventId = UUID.randomUUID();
         UUID expectedUserId = UUID.randomUUID();
         String expectedEmail = "test@gmail.com";
         String expectedUsername = "testUsername";
         UserRegisteredEvent event = new UserRegisteredEvent(
-                UUID.randomUUID(),
+                expectedEventId,
                 expectedUserId,
                 expectedUsername,
                 expectedEmail
         );
 
-        when(repository.save(any(Notification.class)))
+        when(repository.insert(any(Notification.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         Notification actualNotification = service.saveUserRegisteredEvent(event);
 
         assertNotNull(actualNotification);
+        assertEquals(expectedEventId.toString(), actualNotification.getId());
         assertEquals(expectedUserId, actualNotification.getUserId());
         assertEquals(Status.PENDING, actualNotification.getStatus());
         assertEquals(expectedEmail, actualNotification.getEmail());
 
-        verify(repository).save(any(Notification.class));
+        verify(repository).insert(any(Notification.class));
     }
 
     @Test
-    void saveUserRegisteredEvent_repositoryThrowsException() {
+    void saveUserRegisteredEvent_duplicate_shouldThrowException() {
         UserRegisteredEvent event = new UserRegisteredEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                "testUsername",
-                "test@gmail.com"
-        );
+                "username",
+                "test@gmail.com");
 
-        when(repository.save(any(Notification.class))).thenThrow(new RuntimeException("DB error"));
+        when(repository.insert(any(Notification.class)))
+                .thenThrow(new DuplicateKeyException("Duplicate Key"));
 
-        assertThrows(RuntimeException.class, () -> service.saveUserRegisteredEvent(event));
+        assertThrows(DuplicateEventException.class, () -> {
+            service.saveUserRegisteredEvent(event);
+        });
 
-        verify(repository).save(any(Notification.class));
+        verify(repository).insert(any(Notification.class));
     }
 
     @Test
