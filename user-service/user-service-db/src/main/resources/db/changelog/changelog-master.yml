@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/5-create-oauth2-authorization-table.yml
   - include:
       file: db/changelog/6-insert-admin.yml
+  - include:
+      file: db/changelog/7-create-outbox-table.yml
