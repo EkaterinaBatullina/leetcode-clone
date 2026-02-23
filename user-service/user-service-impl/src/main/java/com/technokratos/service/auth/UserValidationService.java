@@ -1,16 +1,10 @@
 package com.technokratos.service.auth;
 
-import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Role;
-import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.request.AuthenticationRequest;
-import com.technokratos.event.UserRegisteredEvent;
-import com.technokratos.model.OutboxEntity;
 import com.technokratos.model.UserEntity;
-import com.technokratos.repository.OutboxRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.technokratos.repository.UserRepository;
+import com.technokratos.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,11 +23,9 @@ import static com.technokratos.util.SecurityConstant.PROFILE_ID;
 @Service
 @RequiredArgsConstructor
 public class UserValidationService {
-    private final OutboxRepository outboxRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final KafkaProducerProperties properties;
-    private final ObjectMapper mapper;
+    private final OutboxService service;
 
     public UserEntity validateUser(AuthenticationRequest request) {
         UserEntity user = userRepository.findByUsername(request.username())
@@ -71,21 +63,7 @@ public class UserValidationService {
         newUser.setUuid(userId);
         log.info("Created new user with UUID: {}", userId);
 
-        UserRegisteredEvent event = new UserRegisteredEvent(UUID.randomUUID(), userId, username, email);
-
-        try {
-            outboxRepository.save(OutboxEntity.builder()
-                .id(UUID.randomUUID())
-                .aggregateId(userId.toString())
-                .type("USER_REGISTERED")
-                .payload(mapper.writeValueAsString(event))
-                .topic(properties.getUserRegisteredTopic())
-                .status(Status.NEW)
-                .build());
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize event for user: {}", userId, e);
-            throw new RuntimeException("Error during user registration event serialization", e);
-        }
+        service.saveUserRegisteredOutboxEvent(userId, username, email);
 
         return newUser;
     }

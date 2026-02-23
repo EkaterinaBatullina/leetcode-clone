@@ -1,21 +1,14 @@
 package com.technokratos.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Role;
-import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.request.AuthenticationRequest;
 import com.technokratos.dto.request.UserFullRequest;
 import com.technokratos.dto.request.RoleRequest;
 import com.technokratos.dto.request.UserPartialRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
-import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
-import com.technokratos.model.OutboxEntity;
 import com.technokratos.model.UserEntity;
-import com.technokratos.repository.OutboxRepository;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.auth.AuthenticationService;
 import com.technokratos.util.SecurityUtil;
@@ -41,10 +34,8 @@ public class UserServiceImpl implements UserService {
     private final StatisticService statisticService;
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
-    private final OutboxRepository outboxRepository;
     private final UserMapper userMapper;
-    private final ObjectMapper objectMapper;
-    private final KafkaProducerProperties properties;
+    private final OutboxService outboxService;
 
     @Override
     @Cacheable(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
@@ -81,22 +72,7 @@ public class UserServiceImpl implements UserService {
         UUID uuid = userRepository.save(userEntity);
         userEntity.setUuid(uuid);
         statisticService.create(uuid);
-
-        UserRegisteredEvent event = new UserRegisteredEvent(UUID.randomUUID(), uuid, userFullRequest.username(),  userFullRequest.email());
-
-        try {
-            outboxRepository.save(OutboxEntity.builder()
-                    .id(UUID.randomUUID())
-                    .aggregateId(uuid.toString())
-                    .type("USER_REGISTERED")
-                    .payload(objectMapper.writeValueAsString(event))
-                    .topic(properties.getUserRegisteredTopic())
-                    .status(Status.NEW)
-                    .build());
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize event for user: {}", uuid, e);
-        }
-
+        outboxService.saveUserRegisteredOutboxEvent(uuid, userEntity.getUsername(), userEntity.getEmail());
         return authenticationService.signIn(
                 new AuthenticationRequest(userEntity.getUsername(), rawPassword)
         );
