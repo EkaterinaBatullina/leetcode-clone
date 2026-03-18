@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-problem
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-problem.sql
+
+  - changeSet:
+      id: create-testcase
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-testcase.sql
+
+  - changeSet:
+      id: create-language
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-language.sql
+
+  - changeSet:
+      id: create-wrapper
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-wrapper.sql
+
+  - changeSet:
+      id: create-tag
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-tag.sql
+
+  - changeSet:
+      id: create-audit-log
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-audit-log.sql

@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-enums
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-enums.sql

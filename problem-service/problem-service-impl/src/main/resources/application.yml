@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: problem-service-impl
+  config:
+    import: "config/problem-service-secrets.yml"
+  profiles:
+    active: dev
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        register: true
+        prefer-ip-address: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}-${random.value}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yml
+    drop-first: false
+  kafka:
+    listener:
+      missing-topics-fatal: false
+    admin:
+      properties:
+        auto.create.topics.enable: true
+      auto-create: true
+    consumer:
+      group-id: submission-service-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        allow.auto.create.topics: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, prometheus
+server:
+  port: 8081
+logging:
+  level:
+    root: INFO
+springdoc:
+  packages-to-scan:
+    - com.technokratos.problemserviceimpl.controller
+  paths-to-match:
+    - /api/**
+    - /internal/**

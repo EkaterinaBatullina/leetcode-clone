@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-indexes
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DDL\create-indexes.sql

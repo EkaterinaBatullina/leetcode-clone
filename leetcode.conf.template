@@ -1,0 +1,62 @@
+##########################################
+#        DATABASE CONFIGURATION
+##########################################
+
+# PostgreSQL credentials for Problem Service
+POSTGRES_DB=your_postgres_db_name
+POSTGRES_USER=your_postgres_username
+POSTGRES_PASSWORD=your_postgres_password
+
+# MongoDB credentials for Submission Service
+MONGO_INITDB_ROOT_USERNAME=your_mongo_username
+MONGO_INITDB_ROOT_PASSWORD=your_mongo_password
+MONGO_INITDB_DATABASE=your_mongo_database_name
+
+# Redis (used for temporary storage / caching / task coordination)
+REDIS_PASSWORD=your_redis_password
+
+##########################################
+#           KAFKA CONFIGURATION
+##########################################
+
+# Kafka Broker
+KAFKA_BROKER_ID=1
+KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
+KAFKA_LISTENER_PORT=9092
+KAFKA_LISTENER_NAME=PLAINTEXT
+KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+
+# Spring Boot (Kafka Integration)
+SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+##########################################
+#          SPRING APP CONNECTIONS
+##########################################
+
+# Spring PostgreSQL datasource
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/your_postgres_db_name
+
+# Spring MongoDB datasource
+# !!!! Replace username, password, and db name in URI
+SPRING_DATA_MONGODB_URI=mongodb://your_mongo_username:your_mongo_password@mongodb:27017/your_mongo_database_name?authSource=admin
+
+##########################################
+#          ZOOKEEPER CONFIGURATION
+##########################################
+
+ZOOKEEPER_CLIENT_PORT=2181
+ZOOKEEPER_TICK_TIME=2000
+
+##########################################
+#          RABBITMQ CONFIGURATION
+##########################################
+
+# RabbitMQ default user/pass for local dev
+RABBITMQ_DEFAULT_USER=your_rabbitmq_user
+RABBITMQ_DEFAULT_PASS=your_rabbitmq_password
+

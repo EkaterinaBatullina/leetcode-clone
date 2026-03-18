@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: submission-service-impl
+  config:
+    import: "config/submission-service-secrets.yml"
+  profiles:
+    active: dev
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        register: true
+        prefer-ip-address: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}-${random.value}
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+      ssl:
+        enabled: false
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
+      key-prefix: "submission-service:cache::"
+      cache-null-values: false
+  kafka:
+    listener:
+      missing-topics-fatal: false
+    admin:
+      properties:
+        auto.create.topics.enable: true
+      auto-create: true
+    consumer:
+      group-id: submission-service
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        allow.auto.create.topics: true
+
+  rabbitmq:
+    host:  localRabbitMQ
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${ RABBITMQ_DEFAULT_PASS}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, prometheus
+server:
+  port: 8080
+logging:
+  level:
+    root: INFO
+springdoc:
+  packages-to-scan:
+    - com.technokratos.submissionserviceimpl.controller
+  paths-to-match:
+    - /api/**
+    - /internal/**
+judge0:
+  url: http://host.docker.internal:2358
+  batch-url: http://host.docker.internal:2358/submissions/batch?base64_encoded=true&wait=false&fields=*
+  tokens-url: http://host.docker.internal:2358/submissions/batch?tokens=
+  callback_url: http://host.docker.internal:8080/api/v1/judge0/webhook
+  batch-size: 5
+
+rapidapi:
+  api-key: 5056721e9emsh4b4056c95c0c2a4p1a5b1cjsn3c0b7d99eb8f
+  api-host: judge0-ce.p.rapidapi.com
+  callback-url: https://supporters-rpg-substantially-flexible.trycloudflare.com/
+  batch-url: http://judge0-ce.p.rapidapi.com/submissions/batch?base64_encoded=true&wait=false&fields=*
+  batch-size: 5
