@@ -1,13 +1,4 @@
 spring:
-<<<<<<< HEAD
-  datasource:
-    url: jdbc:tc:postgresql:17:///problem_service_testing_db
-    username: elise
-    password: elise
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 2
-=======
   cloud:
     consul:
       enabled: false
@@ -21,13 +12,10 @@ spring:
     hibernate:
       ddl-auto: create
 
->>>>>>> feature/problem-and-submission-service
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yml
     drop-first: false
-<<<<<<< HEAD
-=======
 
   kafka:
     listener:
@@ -42,4 +30,3 @@ spring:
 publish:
   ack:
     timeout: 5000
->>>>>>> feature/problem-and-submission-service

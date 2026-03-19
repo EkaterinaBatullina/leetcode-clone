@@ -16,7 +16,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class ProducerConfiguration {
 
-    final KafkaProperties kafkaProperties;
+    private final KafkaProperties kafkaProperties;
 
     @Bean
     public Map<String, Object> producerConf() {
@@ -44,8 +44,6 @@ public class ProducerConfiguration {
     }
 
     @Bean
-<<<<<<< HEAD
-=======
     public NewTopic runWithWrapperTopic() {
         return new NewTopic("run-with-wrapper-topic", 2, (short) 1);
     }
@@ -56,7 +54,6 @@ public class ProducerConfiguration {
     }
 
     @Bean
->>>>>>> feature/problem-and-submission-service
     public NewTopic publishTestcasesTopic() {
         return new NewTopic("publish-testcases-topic", 2, (short) 1);
     }
@@ -65,10 +62,4 @@ public class ProducerConfiguration {
     public NewTopic publishProblemsTopic() {
         return new NewTopic("publish-problems-topic", 2, (short) 1);
     }
-<<<<<<< HEAD
 }
-
-
-=======
-}
->>>>>>> feature/problem-and-submission-service

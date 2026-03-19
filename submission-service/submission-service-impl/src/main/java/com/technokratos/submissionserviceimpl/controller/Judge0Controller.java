@@ -1,16 +1,6 @@
 package com.technokratos.submissionserviceimpl.controller;
 
-<<<<<<< HEAD
-import com.technokratos.submissionserviceapi.api.external.Judge0Api;
-=======
-import com.technokratos.submissionserviceapi.api.internal.Judge0Api;
->>>>>>> feature/problem-and-submission-service
-import com.technokratos.submissionserviceapi.dto.request.SubmissionRequest;
-import com.technokratos.submissionserviceapi.dto.response.Judge0Response;
-import com.technokratos.submissionserviceapi.dto.response.RunResponse;
-import com.technokratos.submissionserviceapi.enums.Action;
 import com.technokratos.submissionserviceimpl.assembler.SubmissionAssembler;
-<<<<<<< HEAD
 import com.technokratos.submissionserviceimpl.handler.RabbitMQUserUpdateRequestHandler;
 import com.technokratos.submissionserviceimpl.handler.SubmissionActionHandler;
 import com.technokratos.submissionserviceimpl.redis.RedisCleanupService;
@@ -18,12 +8,10 @@ import com.technokratos.submissionserviceimpl.redis.RedisMetadataService;
 import com.technokratos.submissionserviceimpl.redis.RedisService;
 import com.technokratos.submissionserviceimpl.service.SubmissionService;
 import io.micrometer.core.instrument.MeterRegistry;
-=======
 import com.technokratos.submissionserviceimpl.handler.SubmissionActionHandler;
 import com.technokratos.submissionserviceimpl.redis.RedisCleanupService;
 import com.technokratos.submissionserviceimpl.redis.RedisService;
 import com.technokratos.submissionserviceimpl.service.SubmissionService;
->>>>>>> feature/problem-and-submission-service
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -39,18 +27,10 @@ import java.util.UUID;
 public class Judge0Controller implements Judge0Api {
     private final RedisCleanupService redisCleanupService;
     private final RedisService redisService;
-<<<<<<< HEAD
-    private final RedisMetadataService redisMetadataService;
-    private final SubmissionAssembler submissionAssembler;
-    private final SubmissionActionHandler submissionActionHandler;
-    private final SubmissionService submissionService;
-    private final RabbitMQUserUpdateRequestHandler updateRequestHandler;
-=======
     private final SubmissionAssembler submissionAssembler;
     private final SubmissionActionHandler submissionActionHandler;
     private final SubmissionService submissionService;
 
->>>>>>> feature/problem-and-submission-service
 
     @Override
     public ResponseEntity<Void> handleCallback(Judge0Response response) {
@@ -60,16 +40,14 @@ public class Judge0Controller implements Judge0Api {
             return ResponseEntity.badRequest().build();
         }
         String token = response.token();
-<<<<<<< HEAD
-        String submissionId = redisMetadataService.getSubmissionIdFromToken(token);
-=======
+
         String submissionId = redisService.getSubmissionIdFromToken(token);
->>>>>>> feature/problem-and-submission-service
+
         if (submissionId == null) {
             log.warn("unknown token: {}", token);
             return ResponseEntity.ok().build();
         }
-<<<<<<< HEAD
+
         redisService.storeResponse(submissionId, response);
         if (!redisService.allResponsesReceived(submissionId)) {
             return ResponseEntity.ok().build();

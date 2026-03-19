@@ -10,11 +10,7 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-<<<<<<< HEAD
-@Mapper(componentModel = "spring", uses = {TestcaseMapper.class, ArgumentMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
-=======
 @Mapper(componentModel = "spring", uses = {TestcaseMapper.class, TagMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
->>>>>>> feature/problem-and-submission-service
 public interface ProblemMapper {
     ProblemResponse toResponse(Problem problem);
 

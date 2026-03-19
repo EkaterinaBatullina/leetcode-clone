@@ -18,11 +18,7 @@ public interface BaseProblemService {
 
     List<ProblemResponse> getAll();
 
-<<<<<<< HEAD
-    Page<ProblemResponse> getAllWithPagination(List<Difficulty> difficulty, List<String> category, List<String> tag, Pageable pageable);
-=======
     Page<ProblemResponse> getAllWithPagination(List<Difficulty> difficulty, List<String> tag, Pageable pageable);
->>>>>>> feature/problem-and-submission-service
 
     void deleteById(UUID id);
 

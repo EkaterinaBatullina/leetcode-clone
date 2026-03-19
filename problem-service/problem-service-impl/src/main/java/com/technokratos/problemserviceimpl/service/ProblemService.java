@@ -6,36 +6,27 @@ import com.technokratos.problemserviceapi.dto.request.PublishTestcasesRequest;
 import com.technokratos.problemserviceapi.dto.request.RunRequest;
 import com.technokratos.problemserviceapi.dto.response.ProblemResponse;
 import com.technokratos.problemserviceapi.dto.response.TestcaseResponse;
-<<<<<<< HEAD
-=======
 import com.technokratos.problemserviceapi.dto.response.WrapperResponse;
->>>>>>> feature/problem-and-submission-service
 import com.technokratos.problemserviceapi.enums.Difficulty;
 import com.technokratos.problemserviceapi.enums.PublishStatus;
 import com.technokratos.problemserviceimpl.entity.Problem;
+import com.technokratos.problemserviceimpl.exception.ProblemNotFoundException;
+import com.technokratos.problemserviceimpl.exception.PublishingFailedException;
 import com.technokratos.problemserviceimpl.kafka.producer.KafkaProducerService;
 import com.technokratos.problemserviceimpl.mapper.ProblemMapper;
 import com.technokratos.problemserviceimpl.repository.ProblemRepository;
 import com.technokratos.problemserviceimpl.service.base.BaseProblemService;
-<<<<<<< HEAD
-=======
 import com.technokratos.problemserviceimpl.specification.ProblemSpecifications;
->>>>>>> feature/problem-and-submission-service
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-<<<<<<< HEAD
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-=======
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.technokratos.submissionserviceapi.enums.Action;
->>>>>>> feature/problem-and-submission-service
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,17 +41,14 @@ public class ProblemService implements BaseProblemService {
     private final KafkaProducerService kafkaProducerService;
     private final PublishingCoordinatorService publishingCoordinatorService;
     private final TestcaseService testcaseService;
-<<<<<<< HEAD
-=======
     private final WrapperService wrapperService;
     private final CodeWrappingService codeWrappingService;
->>>>>>> feature/problem-and-submission-service
 
     @Override
     @Cacheable(value = "problems", key = "#id")
     public ProblemResponse findById(UUID id) {
         Problem problem = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("user not found with id: %s".formatted(id)));
+                .orElseThrow(() -> new ProblemNotFoundException(id));
         return mapper.toResponse(problem);
     }
 
@@ -71,14 +59,6 @@ public class ProblemService implements BaseProblemService {
     }
 
     @Override
-<<<<<<< HEAD
-    public Page<ProblemResponse> getAllWithPagination(List<Difficulty> difficulty, List<String> category, List<String> tag, Pageable pageable) {
-        List<Difficulty> difficulties = (difficulty != null && !difficulty.isEmpty()) ? difficulty : null;
-        List<String> categories = (category != null && !category.isEmpty()) ? category : null;
-        List<String> tags = (tag != null && !tag.isEmpty()) ? tag : null;
-
-        Page<Problem> problems = repository.findByFiltersPaged(difficulties, categories, tags, pageable);
-=======
     public Page<ProblemResponse> getAllWithPagination(List<Difficulty> difficulties, List<String> tags, Pageable pageable) {
         Specification<Problem> spec = Specification.where(
                 ProblemSpecifications.withDifficulties(difficulties)
@@ -86,7 +66,6 @@ public class ProblemService implements BaseProblemService {
                 ProblemSpecifications.withAllTags(tags)
         );
         Page<Problem> problems = repository.findAll(spec, pageable);
->>>>>>> feature/problem-and-submission-service
         return problems.map(mapper::toResponse);
     }
 
@@ -116,7 +95,7 @@ public class ProblemService implements BaseProblemService {
     @CacheEvict(value = "problems", key = "#id")
     public void update(UUID id, ProblemRequest problemRequest) {
         Problem problem = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("problem not found with id: %s".formatted(id)));
+                .orElseThrow(() -> new ProblemNotFoundException(id));
         mapper.updateEntity(problemRequest, problem);
         repository.save(problem);
     }
@@ -128,21 +107,7 @@ public class ProblemService implements BaseProblemService {
         List<PublishTestcasesRequest> publishTestcasesRequests = new ArrayList<>();
         for (ProblemResponse problem : problems) {
             UUID problemId = problem.id();
-<<<<<<< HEAD
-            List<TestcaseResponse> testcases = problem.testcases()
-                    .stream()
-                    .map(tc -> new TestcaseResponse(
-                            tc.id(),
-                            tc.inputData(),
-                            tc.expectedOutput(),
-                            tc.visible(),
-                            tc.cpuTimeLimit(),
-                            tc.memoryLimit()
-                    ))
-                    .toList();
-=======
             List<TestcaseResponse> testcases = problem.testcases();
->>>>>>> feature/problem-and-submission-service
             PublishTestcasesRequest publishRequest = new PublishTestcasesRequest(problemId, problem.difficulty(), testcases);
             publishTestcasesRequests.add(publishRequest);
         }
@@ -152,13 +117,13 @@ public class ProblemService implements BaseProblemService {
     @Override
     public Difficulty getDifficulty(UUID id) {
         return repository.findDifficultyById(id)
-                .orElseThrow(() -> new IllegalStateException("problem not found or difficulty is null"));
+                .orElseThrow(() -> new ProblemNotFoundException(id));
     }
 
     @Override
     public PublishStatus getPublishStatus(UUID id) {
         return repository.findPublishStatusById(id)
-                .orElseThrow(() -> new IllegalStateException("problem not found or published_status is null"));
+                .orElseThrow(() -> new ProblemNotFoundException(id));
     }
 
     @Override
@@ -178,43 +143,12 @@ public class ProblemService implements BaseProblemService {
 
     @Override
     public void run(RunRequest request) {
-<<<<<<< HEAD
-        if (getPublishStatus(request.problemId()).equals(PublishStatus.PUBLISHED)) {
-            kafkaProducerService.sendEventToRunTopic(request);
-        } else {
-            publishingCoordinatorService.publishWithAck(build(request.problemId()))
-                    .thenAccept(status -> {
-                        if (status.equals(PublishStatus.PUBLISHED)) {
-                            kafkaProducerService.sendEventToRunTopic(request);
-                        } else {
-                            throw new IllegalStateException("testcase publishing failed: " + status);
-                        }
-                    });
-        }
-=======
         processRequest(request, Action.RUN);
->>>>>>> feature/problem-and-submission-service
     }
 
     @Override
     public void submit(RunRequest request) {
-<<<<<<< HEAD
-        if (getPublishStatus(request.problemId()).equals(PublishStatus.PUBLISHED)) {
-            kafkaProducerService.sendEventToSubmitTopic(request);
-        } else {
-            publishingCoordinatorService.publishWithAck(build(request.problemId()))
-                    .thenAccept(status -> {
-                        if (status.equals(PublishStatus.PUBLISHED)) {
-                            kafkaProducerService.sendEventToSubmitTopic(request);
-                        } else {
-                            throw new IllegalStateException("testcase publishing failed: " + status);
-                        }
-                    });
-        }
-
-=======
         processRequest(request, Action.SUBMIT);
->>>>>>> feature/problem-and-submission-service
     }
 
     @Override
@@ -234,23 +168,25 @@ public class ProblemService implements BaseProblemService {
         List<TestcaseResponse> testcases = testcaseService.getAllByProblemId(problemId);
         return new PublishTestcasesRequest(problemId, difficulty, testcases);
     }
-<<<<<<< HEAD
-}
-=======
 
     private void processRequest(RunRequest request, Action type) {
-        if (isPublished(request.problemId())) {
-            log.debug("sending without publishing: {}", request);
-            dispatchRequest(request, type);
-        } else {
-            publishingCoordinatorService.publishWithAck(build(request.problemId()))
-                    .thenAccept(status -> {
-                        if (status.equals(PublishStatus.PUBLISHED)) {
-                            dispatchRequest(request, type);
-                        } else {
-                            throw new IllegalStateException("testcase publishing failed: " + status);
-                        }
-                    });
+        try {
+            if (isPublished(request.problemId())) {
+                log.debug("sending without publishing: {}", request);
+                dispatchRequest(request, type);
+            } else {
+                publishingCoordinatorService.publishWithAck(build(request.problemId()))
+                        .thenAccept(status -> {
+                            if (status.equals(PublishStatus.PUBLISHED)) {
+                                dispatchRequest(request, type);
+                            } else {
+                                throw new PublishingFailedException(request.problemId());
+                            }
+                        });
+            }
+        } catch (ProblemNotFoundException ex) {
+            log.error("problem not found during publishing: {}", request.problemId());
+            throw ex;
         }
     }
 
@@ -298,4 +234,3 @@ public class ProblemService implements BaseProblemService {
     }
 
 }
->>>>>>> feature/problem-and-submission-service

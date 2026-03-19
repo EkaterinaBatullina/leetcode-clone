@@ -13,12 +13,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-<<<<<<< HEAD
-=======
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
->>>>>>> feature/problem-and-submission-service
 @Table(name = "problem")
 public class Problem {
     @Id
@@ -37,31 +34,12 @@ public class Problem {
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
 
-<<<<<<< HEAD
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "class_name", nullable = false)
-    private String className;
-
-    @Column(name = "method_name", nullable = false)
-    private String methodName;
-
-    @Column(name = "method_signature", nullable = false)
-    private String methodSignature;
-
-    @Column(name = "ready_for_publish", nullable = false)
-    private Boolean readyForPublish;
-
-    @Column(name = "publish_status", nullable = false)
-=======
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "ready_for_publish")
     private Boolean readyForPublish;
 
->>>>>>> feature/problem-and-submission-service
     @Enumerated(EnumType.STRING)
     private PublishStatus publishStatus;
 

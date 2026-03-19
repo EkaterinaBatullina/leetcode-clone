@@ -1,10 +1,7 @@
 package com.technokratos.problemserviceimpl.controller;
 
 import com.technokratos.problemserviceapi.api.internal.MetadataApi;
-<<<<<<< HEAD
-=======
 import com.technokratos.problemserviceapi.dto.response.LanguageResponse;
->>>>>>> feature/problem-and-submission-service
 import com.technokratos.problemserviceapi.dto.response.TagResponse;
 import com.technokratos.problemserviceapi.enums.Difficulty;
 import com.technokratos.problemserviceimpl.service.MetadataService;
@@ -26,12 +23,9 @@ public class MetadataController implements MetadataApi {
     public List<TagResponse> getTags() {
         return service.getTags();
     }
-<<<<<<< HEAD
-=======
 
     @Override
     public List<LanguageResponse> getLanguages() {
         return service.getLanguage();
     }
->>>>>>> feature/problem-and-submission-service
 }
