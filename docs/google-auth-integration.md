@@ -1,5 +1,15 @@
 # Интеграция Google OAuth
 
+## Системный поток Google OAuth
+Пользователь инициирует вход через Google OAuth →
+Frontend/Backend перенаправляет на Google Consent Screen →
+Пользователь авторизуется и предоставляет доступ →
+Google возвращает authorization code (OAuth 2.0 Authorization Code Flow) →
+Backend обменивает code на access token и ID token →
+Проверяется подлинность ID token (signature, issuer, audience) →
+Извлекаются пользовательские данные (email, profile) →
+Выполняется поиск пользователя в базе или создание нового →
+Выдаётся внутренняя JWT-сессия для доступа к системе
 
 # Шаг 1 - Инициализация проекта в Google Cloud
 
@@ -9,6 +19,7 @@
 
 ![](screenshot/google-auth-screenshot/step1.png)
 
+---
 
 # Шаг 2 - Завершение инициализации проекта в Google Cloud
 
@@ -19,6 +30,7 @@
 
 ![](screenshot/google-auth-screenshot/step2.jpeg)
 
+---
 
 # Шаг 3 - Создание OAuth 2.0 client ID
 
@@ -30,6 +42,7 @@
 
 ![](screenshot/google-auth-screenshot/step3.jpeg)
 
+---
 
 # Шаг 4 - Auth client created
 
@@ -41,6 +54,7 @@
 
 ![](screenshot/google-auth-screenshot/step4.jpeg)
 
+---
 
 # Шаг 5 - OAuth 2.0 Playground — получение authorization code
 
@@ -58,6 +72,7 @@
 
 ![](screenshot/google-auth-screenshot/step5.jpeg)
 
+---
 
 # Шаг 6 - Обмен ранее полученного authorization code на токены доступа
 
@@ -70,6 +85,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 
 ![](screenshot/google-auth-screenshot/step6.jpeg)
 
+---
 
 # Шаг 7 - Google Sign-In
 
@@ -77,6 +93,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 
 ![](screenshot/google-auth-screenshot/step7.jpeg)
 
+---
 
 # Шаг 8 - Подтверждение разрешений для сервиса leetcode
 
@@ -86,6 +103,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 
 ![](screenshot/google-auth-screenshot/step8.jpeg)
 
+---
 
 # Шаг 9 - Получение access id и refresh token-ов
 
@@ -94,6 +112,7 @@ OAuth Playground автоматически отзывает refresh tokens че
 
 ![](screenshot/google-auth-screenshot/step9.jpeg)
 
+---
 
 # Шаг 10 - Обмен id token через эндпоинт leetcode
 
@@ -108,16 +127,19 @@ OAuth Playground автоматически отзывает refresh tokens че
 
 ![](screenshot/google-auth-screenshot/step10.jpeg)
 
+---
 
 # Шаг 11 - Аутентификация через полученный access token
 
 ![](screenshot/google-auth-screenshot/step11.png)
 
+---
 
 # Шаг 12 - Получение данных пользователя после успешной аутентификации через Google
 
 ![](screenshot/google-auth-screenshot/step12.jpeg)
 
+---
 
 # Шаг 13 - Просмотр декодированного Google token
 

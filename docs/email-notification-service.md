@@ -1,5 +1,15 @@
 # Демонстрация работы notification-service
 
+Регистрация пользователя запускает асинхронный event-driven процесс:
+
+## Системный поток 
+
+Пользователь регистрируется через API → 
+User Service создаёт пользователя →
+User Service публикует событие в Kafka →
+Notification Service потребляет событие →
+Отправляется email-уведомление пользователю →
+Уведомление сохраняется в MongoDB и доступно через API
 
 # Шаг 1: Создание пароля приложения в Google Account
 
@@ -8,6 +18,7 @@
 
 ![](screenshot/email-notification-screenshot/step1.png)
 
+---
 
 # Шаг 2: Пароль сгенерирован
 
@@ -16,6 +27,7 @@
 
 ![](screenshot/email-notification-screenshot/step2.png)
 
+---
 
 # Шаг 3: Регистрация пользователя через Swagger
 
@@ -24,6 +36,7 @@
 
 ![](screenshot/email-notification-screenshot/step3.png)
 
+---
 
 # Шаг 4: Получение access и refresh tokens
 
@@ -32,6 +45,7 @@
 
 ![](screenshot/email-notification-screenshot/step4.png)
 
+---
 
 # Шаг 5: Получение email уведомления
 
@@ -41,6 +55,7 @@
 
 ![](screenshot/email-notification-screenshot/step5.png)
 
+---
 
 # Шаг 6: Применение access token для входа пользователя
 
@@ -49,6 +64,7 @@
 
 ![](screenshot/email-notification-screenshot/step6.png)
 
+---
 
 # Шаг 7: Просмотр информации авторизованного пользователя
 
@@ -58,6 +74,7 @@
 
 ![](screenshot/email-notification-screenshot/step7.png)
 
+---
 
 # Шаг 8: Получение отправленного уведомления из MongoDB
 
