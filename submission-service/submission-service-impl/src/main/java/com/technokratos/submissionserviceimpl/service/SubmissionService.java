@@ -62,11 +62,7 @@ public class SubmissionService implements BaseSubmissionService {
     }
 
     @Override
-<<<<<<< HEAD
-    @Cacheable(value = "submissions", key="#userId-#problemId")
-=======
     @Cacheable(value = "submissions", key = "T(String).format('first_success_%s_%s', #userId, #problemId)")
->>>>>>> feature/problem-and-submission-service
     public boolean isFirstSuccessfulAttempt(UUID userId, UUID problemId) {
         return !repository.existsByUserIdAndProblemIdAndStatus(userId, problemId, SubmissionStatus.SOLVED);
     }

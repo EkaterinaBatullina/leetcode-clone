@@ -35,10 +35,7 @@ public class RedisService {
 
     public List<Judge0Response> getAllResponses(String submissionId) {
         List<String> responseJsons = redis.opsForList().range(RedisKeysUtil.submissionResponses(submissionId), 0, -1);
-<<<<<<< HEAD
-=======
         assert responseJsons != null;
->>>>>>> feature/problem-and-submission-service
         return responseJsons.stream()
                 .map(json -> {
                     try {
@@ -48,10 +45,6 @@ public class RedisService {
                     }
                 }).toList();
     }
-<<<<<<< HEAD
-}
-
-=======
 
     public Boolean isSingleRequest(String submissionId) {
         return redis.hasKey(RedisKeysUtil.submissionIsSingleRequest(submissionId));
@@ -65,4 +58,3 @@ public class RedisService {
         return redis.opsForValue().get(RedisKeysUtil.submissionAction(submissionId));
     }
 }
->>>>>>> feature/problem-and-submission-service

@@ -20,8 +20,6 @@ public class ProblemTestcases {
     @Id
     private UUID id;
     private Difficulty difficulty;
-<<<<<<< HEAD
-=======
     private String visibleInputs;
     private String visibleOutputs;
     private int cpuTimeLimit;
@@ -30,6 +28,5 @@ public class ProblemTestcases {
     private Integer visibleMemoryLimit;
     private String inputs;
     private String outputs;
->>>>>>> feature/problem-and-submission-service
     private List<Testcase> testcases;
 }

@@ -11,10 +11,7 @@ import com.technokratos.submissionserviceapi.enums.SubmissionStatus;
 import com.technokratos.submissionserviceimpl.feign.Judge0Client;
 import com.technokratos.submissionserviceimpl.config.properties.Judge0Properties;
 import com.technokratos.submissionserviceimpl.entity.Testcase;
-<<<<<<< HEAD
-=======
 import com.technokratos.submissionserviceimpl.redis.RedisKeysUtil;
->>>>>>> feature/problem-and-submission-service
 import com.technokratos.submissionserviceimpl.service.base.BaseJudge0Service;
 import com.technokratos.problemserviceapi.dto.request.RunRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-<<<<<<< HEAD
-=======
 import java.time.Duration;
->>>>>>> feature/problem-and-submission-service
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +42,6 @@ public class Judge0Service implements BaseJudge0Service {
 
     @Override
     public void sendSubmission(RunRequest request, Action action) {
-<<<<<<< HEAD
-=======
         UUID problemId = request.problemId();
         UUID submissionId = request.id();
         String inputs = (action == Action.RUN)
@@ -92,7 +84,6 @@ public class Judge0Service implements BaseJudge0Service {
     public void sendBatchSubmission(RunRequest request, Action action) {
         UUID submissionId = request.id();
         log.debug("received run request with id: {} and action: {}", submissionId, action);
->>>>>>> feature/problem-and-submission-service
         List<Testcase> testcases = (action == Action.RUN)
                 ? problemTestcasesService.getAllVisibleByProblemId(request.problemId())
                 : problemTestcasesService.getAllByProblemId(request.problemId());
@@ -108,19 +99,11 @@ public class Judge0Service implements BaseJudge0Service {
         )).toList();
         List<List<Judge0Request>> batches = ListUtils.partition(submissions, properties.getBatchSize());
         for (List<Judge0Request> batch : batches) {
-<<<<<<< HEAD
-            sendBatch(batch, request.id());
-        }
-        redisTemplate.opsForValue().set(submissionAction(request.id().toString()), String.valueOf(action));
-        SubmissionRequest submissionRequest = new SubmissionRequest(
-                request.id(),
-=======
             sendBatch(batch,submissionId);
         }
         redisTemplate.opsForValue().set(submissionAction(request.id().toString()), String.valueOf(action), Duration.ofMinutes(10));
         SubmissionRequest submissionRequest = new SubmissionRequest(
                 submissionId,
->>>>>>> feature/problem-and-submission-service
                 request.userId(),
                 request.problemId(),
                 request.languageId(),
@@ -130,15 +113,9 @@ public class Judge0Service implements BaseJudge0Service {
                 new ArrayList<>()
         );
         submissionService.create(submissionRequest);
-<<<<<<< HEAD
-        redisTemplate.opsForList().rightPush("submission:queue", request.id().toString());
-    }
-//C:\Users\Элиза\AppData\Local\Docker\wsl
-=======
         redisTemplate.opsForValue().set(RedisKeysUtil.submissionIsSingleRequest(request.id().toString()), "true", Duration.ofMinutes(10));
     }
 
->>>>>>> feature/problem-and-submission-service
     @Async
     public void sendBatch(List<Judge0Request> batch, UUID submissionId) {
         try {
@@ -153,21 +130,11 @@ public class Judge0Service implements BaseJudge0Service {
                 JsonNode token = item.get("token");
                 if (token != null) {
                     tokens.add(token.asText());
-<<<<<<< HEAD
-                    redisTemplate.opsForValue().set("token:" + token.asText() + ":submissionId", submissionId.toString());
-=======
                     redisTemplate.opsForValue().set(RedisKeysUtil.tokenToSubmission(token.asText()), submissionId.toString(), Duration.ofMinutes(10));
->>>>>>> feature/problem-and-submission-service
                 }
             }
         }
         log.debug("extracted tokens: {}", tokens);
-<<<<<<< HEAD
-        redisTemplate.opsForList().rightPushAll("submission:" + submissionId + ":tokens", tokens);
-    }
-}
-=======
         redisTemplate.opsForList().rightPushAll(RedisKeysUtil.submissionTokens(submissionId.toString()), tokens);
     }
 }
->>>>>>> feature/problem-and-submission-service

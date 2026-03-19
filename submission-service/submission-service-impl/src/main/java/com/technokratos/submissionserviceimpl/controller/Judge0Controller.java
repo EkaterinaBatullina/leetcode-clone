@@ -1,13 +1,12 @@
 package com.technokratos.submissionserviceimpl.controller;
 
+import com.technokratos.submissionserviceapi.api.internal.Judge0Api;
+import com.technokratos.submissionserviceapi.dto.request.SubmissionRequest;
+import com.technokratos.submissionserviceapi.dto.response.Judge0Response;
+import com.technokratos.submissionserviceapi.dto.response.RunResponse;
+import com.technokratos.submissionserviceapi.enums.Action;
 import com.technokratos.submissionserviceimpl.assembler.SubmissionAssembler;
 import com.technokratos.submissionserviceimpl.handler.RabbitMQUserUpdateRequestHandler;
-import com.technokratos.submissionserviceimpl.handler.SubmissionActionHandler;
-import com.technokratos.submissionserviceimpl.redis.RedisCleanupService;
-import com.technokratos.submissionserviceimpl.redis.RedisMetadataService;
-import com.technokratos.submissionserviceimpl.redis.RedisService;
-import com.technokratos.submissionserviceimpl.service.SubmissionService;
-import io.micrometer.core.instrument.MeterRegistry;
 import com.technokratos.submissionserviceimpl.handler.SubmissionActionHandler;
 import com.technokratos.submissionserviceimpl.redis.RedisCleanupService;
 import com.technokratos.submissionserviceimpl.redis.RedisService;
@@ -30,6 +29,7 @@ public class Judge0Controller implements Judge0Api {
     private final SubmissionAssembler submissionAssembler;
     private final SubmissionActionHandler submissionActionHandler;
     private final SubmissionService submissionService;
+    private final RabbitMQUserUpdateRequestHandler rabbitHandler;
 
 
     @Override
@@ -40,26 +40,11 @@ public class Judge0Controller implements Judge0Api {
             return ResponseEntity.badRequest().build();
         }
         String token = response.token();
-
         String submissionId = redisService.getSubmissionIdFromToken(token);
-
         if (submissionId == null) {
             log.warn("unknown token: {}", token);
             return ResponseEntity.ok().build();
         }
-
-        redisService.storeResponse(submissionId, response);
-        if (!redisService.allResponsesReceived(submissionId)) {
-            return ResponseEntity.ok().build();
-        }
-        List<Judge0Response> allResponses = redisService.getAllResponses(submissionId);
-        RunResponse runResponse = new RunResponse(UUID.randomUUID(), allResponses);
-        log.debug("run response: {}", runResponse);
-        SubmissionRequest request = submissionAssembler.build(submissionId, allResponses);
-        submissionService.update(submissionId, request);
-        String actionRaw = Optional.ofNullable(
-                redisMetadataService.getAction(submissionId)
-=======
         boolean isSingleRequest = redisService.isSingleRequest(submissionId);
         redisService.storeResponse(submissionId, response);
         if (isSingleRequest) {
@@ -73,6 +58,7 @@ public class Judge0Controller implements Judge0Api {
             try {
                 Action action = Action.valueOf(actionRaw.trim().toUpperCase());
                 submissionActionHandler.handle(action, runResponse);
+                rabbitHandler.handle(action, request);
             } catch (IllegalArgumentException e) {
                 log.error("unknown action '{}' for submission {}", actionRaw, submissionId, e);
             }
@@ -90,15 +76,11 @@ public class Judge0Controller implements Judge0Api {
         log.debug("run response: {}", runResponse);
         String actionRaw = Optional.ofNullable(
                 redisService.getAction(submissionId)
->>>>>>> feature/problem-and-submission-service
         ).orElse(Action.RUN.name());
         try {
             Action action = Action.valueOf(actionRaw.trim().toUpperCase());
             submissionActionHandler.handle(action, runResponse);
-<<<<<<< HEAD
-            // updateRequestHandler.handle(action, request);
-=======
->>>>>>> feature/problem-and-submission-service
+            rabbitHandler.handle(action, request);
         } catch (IllegalArgumentException e) {
             log.error("unknown action '{}' for submission {}", actionRaw, submissionId, e);
         }
@@ -106,11 +88,8 @@ public class Judge0Controller implements Judge0Api {
         redisCleanupService.clearSubmission(submissionId);
         return ResponseEntity.ok().build();
     }
-<<<<<<< HEAD
-=======
 
     private boolean testAccepted(int status) {
         return status == 3;
     }
->>>>>>> feature/problem-and-submission-service
 }

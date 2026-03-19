@@ -14,10 +14,6 @@ public interface BaseProblemTestcasesService {
 
     Difficulty getProblemDifficulty(UUID problemId);
 
-<<<<<<< HEAD
-    UUID create(PublishTestcasesRequest publishTestcasesRequest);
-}
-=======
     String getInputs(UUID problemId);
 
     String getOutputs(UUID problemId);
@@ -37,4 +33,3 @@ public interface BaseProblemTestcasesService {
     UUID create(PublishTestcasesRequest publishTestcasesRequest);
 }
 
->>>>>>> feature/problem-and-submission-service

@@ -21,9 +21,6 @@ public interface SubmissionMapper {
     List<Submission> toEntity(List<SubmissionRequest> submissionRequests);
 
     @Mapping(target = "id", ignore = true)
-<<<<<<< HEAD
-=======
     @Mapping(target = "responses", source = "responses")
->>>>>>> feature/problem-and-submission-service
     void updateEntity(SubmissionRequest submissionRequest, @MappingTarget Submission submission);
 }

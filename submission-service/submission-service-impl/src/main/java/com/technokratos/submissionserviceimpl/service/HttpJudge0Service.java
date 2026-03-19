@@ -11,10 +11,7 @@ import com.technokratos.submissionserviceapi.enums.SubmissionStatus;
 import com.technokratos.submissionserviceimpl.config.properties.RapidApiProperties;
 import com.technokratos.submissionserviceimpl.entity.Testcase;
 import com.technokratos.submissionserviceimpl.feign.RapidApiJudge0Client;
-<<<<<<< HEAD
-=======
 import com.technokratos.submissionserviceimpl.redis.RedisKeysUtil;
->>>>>>> feature/problem-and-submission-service
 import com.technokratos.submissionserviceimpl.service.base.BaseJudge0Service;
 import com.technokratos.problemserviceapi.dto.request.RunRequest;
 import lombok.RequiredArgsConstructor;
@@ -43,11 +40,7 @@ public class HttpJudge0Service implements BaseJudge0Service {
     private final ObjectMapper objectMapper;
 
     @Override
-<<<<<<< HEAD
-    public void sendSubmission(RunRequest request, Action action) {
-=======
     public void sendBatchSubmission(RunRequest request, Action action) {
->>>>>>> feature/problem-and-submission-service
         List<Testcase> testcases = (action == Action.RUN)
                 ? problemTestcasesService.getAllVisibleByProblemId(request.problemId())
                 : problemTestcasesService.getAllByProblemId(request.problemId());
@@ -79,14 +72,11 @@ public class HttpJudge0Service implements BaseJudge0Service {
         submissionService.create(submissionRequest);
     }
 
-<<<<<<< HEAD
-=======
     @Override
     public void sendSubmission(RunRequest request, Action action) {
 
     }
 
->>>>>>> feature/problem-and-submission-service
     @Async
     public void sendBatch(List<Judge0Request> batch, UUID submissionId) {
         try {
@@ -101,21 +91,11 @@ public class HttpJudge0Service implements BaseJudge0Service {
                 JsonNode token = item.get("token");
                 if (token != null) {
                     tokens.add(token.asText());
-<<<<<<< HEAD
-                    redisTemplate.opsForValue().set("token:" + token.asText() + ":submissionId", submissionId.toString());
-=======
                     redisTemplate.opsForValue().set(RedisKeysUtil.tokenToSubmission(token.asText()), submissionId.toString());
->>>>>>> feature/problem-and-submission-service
                 }
             }
         }
         log.debug("extracted tokens: {}", tokens);
-<<<<<<< HEAD
-        redisTemplate.opsForList().rightPushAll("submission:" + submissionId + ":tokens", tokens);
-    }
-}
-=======
         redisTemplate.opsForList().rightPushAll(RedisKeysUtil.submissionTokens(submissionId.toString()), tokens);
     }
 }
->>>>>>> feature/problem-and-submission-service

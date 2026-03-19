@@ -17,11 +17,8 @@ public class RedisKeysUtil {
     public static String tokenToSubmission(String token) {
         return "token:%s:submissionId".formatted(token);
     }
-<<<<<<< HEAD
-=======
 
     public static String submissionIsSingleRequest(String submissionId) {
         return "submission:%s:isSingleRequest".formatted(submissionId);
     }
->>>>>>> feature/problem-and-submission-service
 }

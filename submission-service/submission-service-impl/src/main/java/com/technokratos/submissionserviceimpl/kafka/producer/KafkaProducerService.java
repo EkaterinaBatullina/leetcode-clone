@@ -20,8 +20,6 @@ public class KafkaProducerService {
         kafkaTemplate.send("submit-response-topic", response.id().toString(), response);
     }
 
-<<<<<<< HEAD
-=======
     public void sendEventToRunWithWrapperResponseTopic(RunResponse response) {
         kafkaTemplate.send("run-with-wrapper-response-topic", response.id().toString(), response);
     }
@@ -30,7 +28,6 @@ public class KafkaProducerService {
         kafkaTemplate.send("submit-with-wrapper-response-topic", response.id().toString(), response);
     }
 
->>>>>>> feature/problem-and-submission-service
     public void sendEventToProblemsPublishedResponseTopic(ProblemsPublishedResponse response) {
         kafkaTemplate.send("problems-published-response-topic", response.problemId().toString(), response);
     }

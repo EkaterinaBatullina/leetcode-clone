@@ -8,16 +8,8 @@ import com.technokratos.problemserviceapi.dto.response.PublishTestcasesResponse;
 import com.technokratos.problemserviceapi.enums.PublishStatus;
 import com.technokratos.submissionserviceapi.enums.Action;
 import com.technokratos.submissionserviceimpl.kafka.producer.KafkaProducerService;
-<<<<<<< HEAD
-import com.technokratos.submissionserviceimpl.service.HttpJudge0Service;
-import com.technokratos.submissionserviceimpl.service.Judge0Service;
 import com.technokratos.submissionserviceimpl.service.ProblemTestcasesService;
 import com.technokratos.submissionserviceimpl.service.base.BaseJudge0Service;
-import lombok.RequiredArgsConstructor;
-=======
-import com.technokratos.submissionserviceimpl.service.ProblemTestcasesService;
-import com.technokratos.submissionserviceimpl.service.base.BaseJudge0Service;
->>>>>>> feature/problem-and-submission-service
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -41,20 +33,12 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "run-topic", groupId = "submission-service", containerFactory = "kafkaListenerContainerFactory")
     public void consumeRunRequest(RunRequest request) {
-<<<<<<< HEAD
-        log.debug("Received run request for submission: {}", request.id());
-        judge0Service.sendSubmission(request, Action.RUN);
-=======
         log.debug("received run request for submission: {}", request.id());
         judge0Service.sendBatchSubmission(request, Action.RUN);
->>>>>>> feature/problem-and-submission-service
     }
 
     @KafkaListener(topics = "submit-topic", groupId = "submission-service", containerFactory = "kafkaListenerContainerFactory")
     public void consumeSubmitRequest(RunRequest request) {
-<<<<<<< HEAD
-        log.debug("Received submit request: {}", request);
-=======
         log.debug("received submit request: {}", request);
         judge0Service.sendBatchSubmission(request, Action.SUBMIT);
     }
@@ -69,18 +53,13 @@ public class KafkaConsumerService {
     @KafkaListener(topics = "submit-with-wrapper-topic", groupId = "submission-service", containerFactory = "kafkaListenerContainerFactory")
     public void consumeSubmitWithWrapperRequest(RunRequest request) {
         log.debug("received submit with wrapper request: {}", request);
->>>>>>> feature/problem-and-submission-service
         judge0Service.sendSubmission(request, Action.SUBMIT);
     }
 
     @KafkaListener(topics = "publish-testcases-topic", groupId = "submission-service", containerFactory = "kafkaListenerContainerFactory")
     public void consumePublishTestcasesRequest(PublishTestcasesRequest publishTestcasesRequest) {
         try {
-<<<<<<< HEAD
-            log.debug("Received publish testcases request: {}", publishTestcasesRequest.problemId());
-=======
             log.debug("received publish testcases request: {}", publishTestcasesRequest.problemId());
->>>>>>> feature/problem-and-submission-service
             problemTestcasesService.create(publishTestcasesRequest);
             kafkaProducerService.sendToPublishTestcasesResponseTopic(
                     new PublishTestcasesResponse(publishTestcasesRequest.problemId(), PublishStatus.PUBLISHED)
@@ -94,11 +73,7 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "publish-problems-topic", groupId = "submission-service", containerFactory = "kafkaListenerContainerFactory")
     public void consumePublishProblemsRequest(PublishProblemsRequest publishProblemsRequests) {
-<<<<<<< HEAD
-        log.debug("Received publish problems request: {}", publishProblemsRequests.id());
-=======
         log.debug("received publish problems request: {}", publishProblemsRequests.id());
->>>>>>> feature/problem-and-submission-service
         List<UUID> problemIds = problemTestcasesService.saveAll(publishProblemsRequests.publishTestcasesRequestList());
         for (UUID problemId : problemIds) {
             ProblemsPublishedResponse response = new ProblemsPublishedResponse(problemId);

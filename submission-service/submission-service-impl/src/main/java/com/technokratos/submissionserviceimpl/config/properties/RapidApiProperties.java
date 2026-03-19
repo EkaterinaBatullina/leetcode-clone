@@ -12,11 +12,7 @@ public class RapidApiProperties {
     private String apiHost;
     private String callbackUrl;
     private String batchUrl;
-<<<<<<< HEAD
-    private int batchSize;
-=======
     private String singleUrl;
     private int batchSize;
     private String secret;
->>>>>>> feature/problem-and-submission-service
 }

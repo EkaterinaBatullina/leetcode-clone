@@ -44,8 +44,6 @@ public class ProducerConfiguration {
     }
 
     @Bean
-<<<<<<< HEAD
-=======
     public NewTopic runWithWrapperResponseTopic() {
         return new NewTopic("run-with-wrapper-response-topic", 2, (short) 1);
     }
@@ -56,7 +54,6 @@ public class ProducerConfiguration {
     }
 
     @Bean
->>>>>>> feature/problem-and-submission-service
     public NewTopic problemsPublishedResponseTopic() {
         return new NewTopic("problems-published-response-topic", 2, (short) 1);
     }

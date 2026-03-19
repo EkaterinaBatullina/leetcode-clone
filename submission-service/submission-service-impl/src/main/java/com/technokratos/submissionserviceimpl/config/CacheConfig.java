@@ -23,11 +23,7 @@ public class CacheConfig {
                         .expireAfterWrite(Duration.ofMinutes(10))
                         .expireAfterAccess(Duration.ofMinutes(5))
                         .build());
-<<<<<<< HEAD
-        CaffeineCache visibleTestcasesCache = new CaffeineCache("visible-testcases",
-=======
         CaffeineCache infoCache = new CaffeineCache("info",
->>>>>>> feature/problem-and-submission-service
                 Caffeine.newBuilder()
                         .maximumSize(1000)
                         .expireAfterWrite(Duration.ofMinutes(10))
@@ -39,15 +35,8 @@ public class CacheConfig {
                         .expireAfterWrite(Duration.ofMinutes(15))
                         .expireAfterAccess(Duration.ofMinutes(10))
                         .build());
-<<<<<<< HEAD
-        cacheManager.setCaches(List.of(testcasesCache, visibleTestcasesCache, submissionsCache));
-        return cacheManager;
-    }
-}
-=======
         cacheManager.setCaches(List.of(testcasesCache, infoCache, submissionsCache));
         return cacheManager;
     }
 }
 
->>>>>>> feature/problem-and-submission-service

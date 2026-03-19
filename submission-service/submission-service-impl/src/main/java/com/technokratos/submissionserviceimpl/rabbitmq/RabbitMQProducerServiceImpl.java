@@ -6,36 +6,17 @@ import com.technokratos.submissionserviceapi.dto.request.UserUpdateRequest;
 import com.technokratos.submissionserviceimpl.service.ProblemTestcasesService;
 import com.technokratos.submissionserviceimpl.service.SubmissionService;
 import lombok.AllArgsConstructor;
-<<<<<<< HEAD
-=======
 import lombok.extern.slf4j.Slf4j;
->>>>>>> feature/problem-and-submission-service
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-<<<<<<< HEAD
-=======
 @Slf4j
->>>>>>> feature/problem-and-submission-service
 public class RabbitMQProducerServiceImpl implements RabbitMQProducerService {
     private final RabbitTemplate rabbitTemplate;
     private final ProblemTestcasesService problemTestcasesService;
     private final SubmissionService submissionService;
-<<<<<<< HEAD
-    @Override
-    public void sendUserUpdateRequest(SubmissionRequest request) {
-        Difficulty difficulty = problemTestcasesService.getProblemDifficulty(request.problemId());
-        boolean isFirstSuccessfulAttempt = submissionService.isFirstSuccessfulAttempt(request.userId(), request.problemId());
-        UserUpdateRequest userUpdateRequest = new UserUpdateRequest(
-                request.userId(),
-                difficulty,
-                request.status(),
-                isFirstSuccessfulAttempt
-        );
-        rabbitTemplate.convertAndSend("task-result-dlx-exchange", "task-result-routing-key", userUpdateRequest);
-=======
 
     @Override
     public void sendUserUpdateRequest(SubmissionRequest request) {
@@ -53,6 +34,5 @@ public class RabbitMQProducerServiceImpl implements RabbitMQProducerService {
         } catch (Exception e) {
             log.error("error while sending user update request", e);
         }
->>>>>>> feature/problem-and-submission-service
     }
 }

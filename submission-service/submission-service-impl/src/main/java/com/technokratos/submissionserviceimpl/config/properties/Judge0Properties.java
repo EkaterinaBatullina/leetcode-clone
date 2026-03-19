@@ -10,15 +10,9 @@ import org.springframework.stereotype.Component;
 public class Judge0Properties {
     private String url;
     private String batchUrl;
-<<<<<<< HEAD
-    private String tokensUrl;
-    private String callbackUrl;
-    private int batchSize;
-=======
     private String singleUrl;
     private String tokensUrl;
     private String callbackUrl;
     private int batchSize;
     private String secret;
->>>>>>> feature/problem-and-submission-service
 }
