@@ -1,4 +1,5 @@
 services:
+
   user-service:
     build:
       context: ./user-service/user-service-impl
@@ -11,6 +12,36 @@ services:
       - postgres
       - kafka
     env_file: leetcode.conf
+    restart: unless-stopped
+
+  problem-service:
+    build:
+      context: ./problem-service/problem-service-impl
+    ports:
+      - "8081:8081"
+    networks:
+      - app-net
+    depends_on:
+      - problem-postgres
+      - kafka
+      - consul
+    env_file: leetcode.conf
+    restart: unless-stopped
+
+  submission-service:
+    build:
+      context: ./submission-service/submission-service-impl
+    ports:
+      - "8080:8080"
+    networks:
+      - app-net
+    depends_on:
+      - mongodb
+      - kafka
+      - localRabbitMQ
+      - consul
+    env_file: leetcode.conf
+    restart: unless-stopped
 
   notification-service:
     build:
@@ -23,22 +54,10 @@ services:
       - mongodb
       - kafka
     env_file: leetcode.conf
-
-  localRabbitMQ:
-    image: rabbitmq:3-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    restart: always
-    networks:
-      - app-net
-    env_file: leetcode.conf
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
 
   postgres:
-    image: postgres:latest
-    container_name: postgres_db
+    image: postgres:17
     ports:
       - "5432:5432"
     volumes:
@@ -46,20 +65,53 @@ services:
     networks:
       - app-net
     env_file: leetcode.conf
+    restart: unless-stopped
+
+  problem-postgres:
+    image: postgres:17
+    ports:
+      - "5433:5432"
+    volumes:
+      - problem_pg_data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    env_file: leetcode.conf
+    restart: unless-stopped
 
   mongodb:
     image: mongo:6.0
-    container_name: mongodb
     ports:
       - "27017:27017"
-    restart: always
     volumes:
       - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - mongo_data:/data/db
     networks:
       - app-net
-    env_file:
-      leetcode.conf
+    env_file: leetcode.conf
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2.4
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-net
+    env_file: leetcode.conf
+    restart: unless-stopped
+
+  localRabbitMQ:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-net
+    env_file: leetcode.conf
+    restart: unless-stopped
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -68,13 +120,12 @@ services:
     networks:
       - app-net
     env_file: leetcode.conf
+    restart: unless-stopped
 
   kafka:
     image: confluentinc/cp-kafka:latest
     ports:
       - "9092:9092"
-    container_name: kafka
-    restart: always
     volumes:
       - kafka_data:/var/lib/kafka/data
     networks:
@@ -82,15 +133,26 @@ services:
     depends_on:
       - zookeeper
     env_file: leetcode.conf
+    restart: unless-stopped
+
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
+    networks:
+      - app-net
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - app-net
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana
@@ -103,6 +165,17 @@ services:
       - prometheus
     networks:
       - app-net
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "127.0.0.1:8083:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - app-net
+    restart: unless-stopped
 
 volumes:
   mongo_data:
@@ -111,7 +184,6 @@ volumes:
   kafka_data:
   postgres_data:
   rabbitmq_data:
-  grafana_data:
 
 networks:
   app-net:
