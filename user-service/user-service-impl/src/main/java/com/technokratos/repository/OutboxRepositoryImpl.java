@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
     }
 
     @Override
+    @Transactional
     public List<OutboxEntity> findAllNew(int limit) {
         return jdbcTemplate.query(SQL_GET_NEW_EVENTS, rowMapper, limit);
     }

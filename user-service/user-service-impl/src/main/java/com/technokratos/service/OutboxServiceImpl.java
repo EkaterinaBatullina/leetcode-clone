@@ -27,7 +27,6 @@ public class OutboxServiceImpl implements OutboxService {
     private final KafkaProducerProperties properties;
     private final ObjectMapper mapper;
 
-    @Transactional
     @Scheduled(fixedDelay = 1000)
     public void processOutbox() {
         List<OutboxEntity> pending = repository.findAllNew(50);
@@ -41,7 +40,7 @@ public class OutboxServiceImpl implements OutboxService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void updateStatus(UUID id, Status status) {
         repository.updateStatus(id, status);
     }
