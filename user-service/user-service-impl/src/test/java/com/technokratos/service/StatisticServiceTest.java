@@ -79,20 +79,17 @@ public class StatisticServiceTest {
     void update() {
         UUID userId = UUID.randomUUID();
         UserUpdateRequest request = new UserUpdateRequest(userId, Difficulty.EASY, SubmissionStatus.SOLVED, true);
+
         StatisticEntity statisticEntity =
                 new StatisticEntity(userId, 1, 1, 0, 0, 0, 0);
-
         when(repository.findById(userId)).thenReturn(Optional.of(statisticEntity));
-        doNothing().when(repository).update(any(StatisticEntity.class));
+
+        doNothing().when(repository).update(userId, 1, 1, 0, 0);
 
         service.update(request);
 
-        assertEquals(2, statisticEntity.getAttempts());
-        assertEquals(2, statisticEntity.getSolvedTasks());
-        assertEquals(1, statisticEntity.getEasy());
-        assertEquals(100, statisticEntity.getSuccessPercentage());
         verify(repository).findById(userId);
-        verify(repository).update(statisticEntity);
+        verify(repository).update(userId, 1, 1, 0, 0);
     }
 
     @Test
@@ -103,7 +100,8 @@ public class StatisticServiceTest {
         when(repository.findById(uuid)).thenReturn(Optional.empty());
 
         assertThrows(StatisticsNotFoundException.class, () -> service.update(request));
+
         verify(repository).findById(uuid);
-        verify(repository, never()).update(any());
+        verify(repository, never()).update(any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
     }
 }

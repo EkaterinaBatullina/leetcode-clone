@@ -1,5 +1,6 @@
 package com.technokratos.repository;
 
+import com.technokratos.exception.StatisticsNotFoundException;
 import com.technokratos.model.StatisticEntity;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,10 +63,10 @@ public class StatisticRepositoryTest {
     }
 
     @Test
-    void update() {
+    void update_success() {
         UUID userId = UUID.randomUUID();
-        val insertUserQuery = "INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(insertUserQuery, userId, "update", "update@example.com", "password", "USER");
+        jdbcTemplate.update("INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
+                userId, "update", "update@example.com", "password", "USER");
 
         StatisticEntity statistic = StatisticEntity.builder()
                 .userId(userId)
@@ -76,13 +78,22 @@ public class StatisticRepositoryTest {
                 .successPercentage(0)
                 .build();
         statisticRepository.save(statistic);
-        statistic.setSolvedTasks(1);
-        statistic.setEasy(1);
-        statistic.setAttempts(1);
-        statisticRepository.update(statistic);
 
-        String query = "SELECT total_solved_tasks FROM statistic WHERE user_id = ?";
-        int result = jdbcTemplate.queryForObject(query, Integer.class, userId);
-        assertEquals(1, result);
+        statisticRepository.update(userId, 1, 1, 0, 0);
+
+        Map<String, Object> result = jdbcTemplate.queryForMap("SELECT total_solved_tasks, solved_easy_tasks, total_attempts, success_percentage FROM statistic WHERE user_id = ?", userId);
+        assertEquals(1, result.get("total_solved_tasks"));
+        assertEquals(1, result.get("solved_easy_tasks"));
+        assertEquals(1, result.get("total_attempts"));
+        assertEquals(100, result.get("success_percentage"));
+    }
+
+    @Test
+    void update_notFound_throwsException() {
+        UUID nonExistentUser = UUID.randomUUID();
+
+        assertThrows(StatisticsNotFoundException.class,
+                () -> statisticRepository.update(nonExistentUser, 1, 1, 0, 0)
+        );
     }
 }

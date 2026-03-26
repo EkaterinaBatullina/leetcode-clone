@@ -1,6 +1,7 @@
 package com.technokratos.repository;
 
 import com.technokratos.dto.enums.Role;
+import com.technokratos.exception.UserNotFoundException;
 import com.technokratos.model.UserEntity;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -71,7 +72,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void update() {
+    void update_success() {
         val insertQuery = "INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
         UUID id = UUID.randomUUID();
         jdbcTemplate.update(insertQuery,
@@ -106,7 +107,21 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void updateRole() {
+    void update_notFound_throwsException() {
+        UUID nonExistentId = UUID.randomUUID();
+        UserEntity user = UserEntity.builder()
+                .uuid(nonExistentId)
+                .username("doesNotExist")
+                .email("doesNotExist@example.com")
+                .password("password")
+                .role(Role.USER)
+                .build();
+
+        assertThrows(UserNotFoundException.class, () -> userRepository.update(user));
+    }
+
+    @Test
+    void updateRole_success() {
         String username = "username";
         String email = "email";
         String password = "password";
@@ -152,7 +167,18 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void deleteById() {
+    void updateRole_notFound_throwsException() {
+        UUID nonExistentId = UUID.randomUUID();
+        UserEntity user = UserEntity.builder()
+                .uuid(nonExistentId)
+                .role(Role.ADMIN)
+                .build();
+
+        assertThrows(UserNotFoundException.class, () -> userRepository.updateRole(user));
+    }
+
+    @Test
+    void deleteById_success() {
         UUID id = UUID.randomUUID();
         jdbcTemplate.update("INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
                 id, "deleteUsername", "delete@example.com", "password", "USER");
@@ -169,7 +195,13 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void deleteByUsername() {
+    void deleteById_notFound_throwsException() {
+        UUID nonExistentId = UUID.randomUUID();
+        assertThrows(UserNotFoundException.class, () -> userRepository.deleteById(nonExistentId));
+    }
+
+    @Test
+    void deleteByUsername_success() {
         UUID id = UUID.randomUUID();
         jdbcTemplate.update("INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
                 id, "deleteUsername", "delete@example.com", "password", "USER");
@@ -183,6 +215,12 @@ public class UserRepositoryTest {
         val resultSecond = jdbcTemplate
                 .queryForList("SELECT id FROM \"user\" WHERE username = 'deleteUsername'");
         assertTrue(resultSecond.isEmpty());
+    }
+
+    @Test
+    void deleteByUsername_notFound_throwsException() {
+        String username = "nonExistent";
+        assertThrows(UserNotFoundException.class, () -> userRepository.deleteByUsername(username));
     }
 
     @Test
