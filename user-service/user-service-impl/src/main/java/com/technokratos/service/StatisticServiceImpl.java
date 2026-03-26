@@ -43,21 +43,20 @@ public class StatisticServiceImpl implements StatisticService {
     @Override
     @CacheEvict(value = "statistic", key = "#request.userId")
     public void update(UserUpdateRequest request) {
-        StatisticEntity statisticEntity = repository.findById(request.userId())
-                .orElseThrow(() -> new StatisticsNotFoundException(request.userId()));
-        statisticEntity.setAttempts(statisticEntity.getAttempts() + 1);
-        if (SOLVED.equals(request.status())) {
-            if (request.isFirstSuccessfulAttempt()) {
-                statisticEntity.setSolvedTasks(statisticEntity.getSolvedTasks() + 1);
-                switch (request.difficulty()) {
-                    case EASY -> statisticEntity.setEasy(statisticEntity.getEasy() + 1);
-                    case MEDIUM -> statisticEntity.setMedium(statisticEntity.getMedium() + 1);
-                    case HARD -> statisticEntity.setHard(statisticEntity.getHard() + 1);
-                }
+        int solvedDelta = 0;
+        int easyDelta = 0;
+        int mediumDelta = 0;
+        int hardDelta = 0;
+
+        if (SOLVED.equals(request.status()) && request.isFirstSuccessfulAttempt()) {
+            solvedDelta = 1;
+            switch (request.difficulty()) {
+                case EASY -> easyDelta = 1;
+                case MEDIUM -> mediumDelta = 1;
+                case HARD -> hardDelta = 1;
             }
         }
-        statisticEntity.setSuccessPercentage((int) ((double) statisticEntity.getSolvedTasks()
-                / statisticEntity.getAttempts() * 100));
-        repository.update(statisticEntity);
+
+        repository.update(request.userId(), solvedDelta, easyDelta, mediumDelta, hardDelta);
     }
 }

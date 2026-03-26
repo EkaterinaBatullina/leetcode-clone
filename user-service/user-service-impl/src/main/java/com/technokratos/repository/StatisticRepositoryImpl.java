@@ -1,5 +1,6 @@
 package com.technokratos.repository;
 
+import com.technokratos.exception.StatisticsNotFoundException;
 import com.technokratos.model.StatisticEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -13,9 +14,18 @@ import java.util.*;
 @RequiredArgsConstructor
 public class StatisticRepositoryImpl implements StatisticRepository {
     private final JdbcTemplate jdbcTemplate;
-    private final static String SQL_GET_BY_ID = "SELECT * FROM statistic WHERE user_id = ?";
-    private final static String SQL_INSERT_STATISTIC = "INSERT INTO statistic (user_id, total_solved_tasks, total_attempts, solved_easy_tasks, solved_medium_tasks, solved_hard_tasks, success_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    private final static String SQL_UPDATE_STATISTICS = "UPDATE statistic SET total_solved_tasks = ?, total_attempts = ?, solved_easy_tasks = ?, solved_medium_tasks = ?, solved_hard_tasks = ?, success_percentage = ? WHERE user_id = ?";
+    private static final String SQL_GET_BY_ID = "SELECT * FROM statistic WHERE user_id = ?";
+    private static final String SQL_INSERT_STATISTIC = "INSERT INTO statistic (user_id, total_solved_tasks, total_attempts, solved_easy_tasks, solved_medium_tasks, solved_hard_tasks, success_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_UPDATE_STATISTICS = """
+                UPDATE statistic
+                SET total_attempts = total_attempts + 1,
+                total_solved_tasks = total_solved_tasks + ?,
+                solved_easy_tasks = solved_easy_tasks + ?,
+                solved_medium_tasks = solved_medium_tasks + ?,
+                solved_hard_tasks = solved_hard_tasks + ?,
+                success_percentage = (total_solved_tasks + ?) * 100 / (total_attempts + 1)
+                WHERE user_id = ?
+            """;
 
     private final RowMapper<StatisticEntity> rowMapper = (rs, rowNum) -> StatisticEntity.builder()
             .userId(rs.getObject("user_id", UUID.class))
@@ -30,7 +40,7 @@ public class StatisticRepositoryImpl implements StatisticRepository {
     @Override
     public Optional<StatisticEntity> findById(UUID uuid) {
         try (val stream = jdbcTemplate.queryForStream(SQL_GET_BY_ID, rowMapper, uuid)) {
-            return stream.findAny();
+            return stream.findFirst();
         }
     }
 
@@ -47,16 +57,17 @@ public class StatisticRepositoryImpl implements StatisticRepository {
         );
     }
 
-    @Override
-    public void update(StatisticEntity statisticEntity) {
-        jdbcTemplate.update(SQL_UPDATE_STATISTICS,
-                statisticEntity.getSolvedTasks(),
-                statisticEntity.getAttempts(),
-                statisticEntity.getEasy(),
-                statisticEntity.getMedium(),
-                statisticEntity.getHard(),
-                statisticEntity.getSuccessPercentage(),
-                statisticEntity.getUserId()
+    public void update(UUID userId, int solvedDelta, int easyDelta, int mediumDelta, int hardDelta) {
+        int updated = jdbcTemplate.update(SQL_UPDATE_STATISTICS,
+                solvedDelta,
+                easyDelta,
+                mediumDelta,
+                hardDelta,
+                solvedDelta,
+                userId
         );
+        if (updated == 0) {
+            throw new StatisticsNotFoundException(userId);
+        }
     }
 }

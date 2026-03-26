@@ -11,5 +11,5 @@ public interface StatisticRepository {
 
     void save(StatisticEntity statisticEntity);
 
-    void update(StatisticEntity statisticEntity);
+    void update(UUID userId, int solvedDelta, int easyDelta, int mediumDelta, int hardDelta);
 }
