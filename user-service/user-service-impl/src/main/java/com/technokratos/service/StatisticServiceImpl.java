@@ -43,6 +43,9 @@ public class StatisticServiceImpl implements StatisticService {
     @Override
     @CacheEvict(value = "statistic", key = "#request.userId")
     public void update(UserUpdateRequest request) {
+        StatisticEntity statistic = repository.findById(request.userId())
+                .orElseThrow(() -> new StatisticsNotFoundException(request.userId()));
+
         int solvedDelta = 0;
         int easyDelta = 0;
         int mediumDelta = 0;

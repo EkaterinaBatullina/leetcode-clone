@@ -1,9 +1,12 @@
-datasource:
-    url: jdbc:tc:postgresql:16:///agona_db
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    username: Ekaterina
-    password: eka_rina16
-    hikari:
-        maximum-pool-size: 2
-liquibase:
-    change-log: classpath:/db/changelog/changelog-master.yml
+spring:
+    datasource:
+        url: jdbc:tc:postgresql:16:///agona_db
+        driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+        username: test
+        password: test
+        hikari:
+            maximum-pool-size: 2
+
+    liquibase:
+        enabled: true
+        change-log: classpath:/db/changelog/changelog-master.yml

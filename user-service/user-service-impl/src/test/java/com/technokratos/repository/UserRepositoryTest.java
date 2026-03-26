@@ -6,7 +6,9 @@ import com.technokratos.model.UserEntity;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +22,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@JdbcTest
+@Import(UserRepositoryImpl.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles(profiles = "test")
 public class UserRepositoryTest {
     @Autowired
@@ -149,7 +153,7 @@ public class UserRepositoryTest {
 
         Optional<UserEntity> result = jdbcTemplate.queryForStream(
                 "SELECT id, username, email, password, role FROM \"user\" WHERE id = ?",
-                ps -> ps.setString(1, uuid.get().toString()),
+                ps -> ps.setObject(1, uuid.get()),
                 (rs, rowNum) -> UserEntity.builder()
                             .uuid(UUID.fromString(rs.getString("id")))
                             .username(rs.getString("username"))
