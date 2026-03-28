@@ -2,7 +2,7 @@ package com.technokratos.listener;
 
 import com.rabbitmq.client.Channel;
 import com.technokratos.service.StatisticService;
-import com.technokratos.submissionserviceapi.dto.request.UserUpdateRequest;
+import com.technokratos.dto.request.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

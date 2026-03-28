@@ -1,7 +1,7 @@
 package com.technokratos.service;
 
 import com.technokratos.dto.response.StatisticResponse;
-import com.technokratos.submissionserviceapi.dto.request.UserUpdateRequest;
+import com.technokratos.dto.request.UserUpdateRequest;
 
 import java.util.UUID;
 

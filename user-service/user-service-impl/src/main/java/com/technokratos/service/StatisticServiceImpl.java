@@ -5,7 +5,7 @@ import com.technokratos.exception.StatisticsNotFoundException;
 import com.technokratos.mapper.StatisticMapper;
 import com.technokratos.model.StatisticEntity;
 import com.technokratos.repository.StatisticRepository;
-import com.technokratos.submissionserviceapi.dto.request.UserUpdateRequest;
+import com.technokratos.dto.request.UserUpdateRequest;
 import com.technokratos.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-import static com.technokratos.submissionserviceapi.enums.SubmissionStatus.SOLVED;
+import static com.technokratos.enums.SubmissionStatus.SOLVED;
 
 @Service
 @RequiredArgsConstructor

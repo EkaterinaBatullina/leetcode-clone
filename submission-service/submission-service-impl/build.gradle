@@ -30,8 +30,8 @@ ext {
 }
 
 dependencies {
-    implementation 'com.technokratos:problem-service-api:1.0-SNAPSHOT'
-    implementation 'com.technokratos:submission-service-api:1.0-SNAPSHOT'
+    implementation project(':problem-service:problem-service-api')
+    implementation project(':submission-service:submission-service-api')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

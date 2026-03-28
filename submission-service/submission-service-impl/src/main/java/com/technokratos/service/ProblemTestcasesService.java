@@ -1,0 +1,146 @@
+package com.technokratos.service;
+
+import com.technokratos.problemserviceapi.dto.request.PublishTestcasesRequest;
+import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.entity.ProblemDifficulty;
+import com.technokratos.entity.ProblemTestcases;
+import com.technokratos.entity.Testcase;
+import com.technokratos.mapper.ProblemTestcasesMapper;
+import com.technokratos.repository.ProblemTestcasesRepository;
+import com.technokratos.service.base.BaseProblemTestcasesService;
+import com.technokratos.util.ResourceLimitCalculator;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ProblemTestcasesService implements BaseProblemTestcasesService {
+    private final ProblemTestcasesRepository repository;
+    private final ProblemTestcasesMapper mapper;
+
+    @Override
+    @Cacheable(value = "testcases", key = "T(String).format('%s_all_testcases', #problemId)")
+    public List<Testcase> getAllByProblemId(UUID problemId) {
+        log.debug("taking out all testcases for problem: {}", problemId);
+        return repository.findById(problemId).getTestcases();
+    }
+
+    @Override
+    @Cacheable(value = "testcases", key = "T(String).format('%s_visible_testcases', #problemId)")
+    public List<Testcase> getAllVisibleByProblemId(UUID problemId) {
+        log.debug("taking out visible testcases for problem: {}", problemId);
+        return repository.findById(problemId).getTestcases().stream().filter(Testcase::isVisible).toList();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_difficulty', #problemId)")
+    public Difficulty getProblemDifficulty(UUID problemId) {
+        return repository.findProblemDifficultyById(problemId)
+                .map(ProblemDifficulty::getDifficulty)
+                .orElseThrow(() -> new EntityNotFoundException("problem not found: " + problemId));
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_inputs', #problemId)")
+    public String getInputs(UUID problemId) {
+        return repository.findIOAndLimitsById(problemId).getInputs();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_outputs', #problemId)")
+    public String getOutputs(UUID problemId) {
+        return repository.findIOAndLimitsById(problemId).getOutputs();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_visible_inputs', #problemId)")
+    public String getVisibleInputs(UUID problemId) {
+        return repository.findVisibleIOAndLimitsById(problemId).getVisibleInputs();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_visible_outputs', #problemId)")
+    public String getVisibleOutputs(UUID problemId) {
+        return repository.findVisibleIOAndLimitsById(problemId).getVisibleOutputs();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_cpu_time_limit', #problemId)")
+    public Integer getCpuTimeLimit(UUID problemId) {
+        return repository.findIOAndLimitsById(problemId).getCpuTimeLimit();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_memory_limit', #problemId)")
+    public Integer getMemoryLimit(UUID problemId) {
+        return repository.findIOAndLimitsById(problemId).getMemoryLimit();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_cpu_time_limit', #problemId)")
+    public Integer getVisibleCpuTimeLimit(UUID problemId) {
+        return repository.findVisibleIOAndLimitsById(problemId).getVisibleCpuTimeLimit();
+    }
+
+    @Override
+    @Cacheable(value = "info", key = "T(String).format('%s_memory_limit', #problemId)")
+    public Integer getVisibleMemoryLimit(UUID problemId) {
+        return repository.findVisibleIOAndLimitsById(problemId).getVisibleMemoryLimit();
+    }
+
+    @Override
+    @Transactional
+    public UUID create(PublishTestcasesRequest publishTestcasesRequest) {
+//        throw new RuntimeException("hiii i'm an exception");
+        ProblemTestcases problemTestcases = new ProblemTestcases();
+        List<Testcase> testcases = mapper.toEntity(publishTestcasesRequest.testcases());
+        List<Testcase> visibleTestcases = testcases.stream().filter(Testcase::isVisible).toList();
+        problemTestcases.setId(publishTestcasesRequest.problemId());
+        problemTestcases.setDifficulty(publishTestcasesRequest.difficulty());
+        problemTestcases.setTestcases(testcases);
+        setConcatenatedIOFields(problemTestcases, testcases);
+        ResourceLimitCalculator.Limits limits = ResourceLimitCalculator.compute(testcases);
+        problemTestcases.setCpuTimeLimit(limits.cpuTimeLimit());
+        problemTestcases.setMemoryLimit(limits.memoryLimit());
+        ResourceLimitCalculator.Limits visibleLimits = ResourceLimitCalculator.compute(visibleTestcases);
+        problemTestcases.setVisibleCpuTimeLimit(visibleLimits.cpuTimeLimit());
+        problemTestcases.setVisibleMemoryLimit(visibleLimits.memoryLimit());
+        log.debug("created: {}", problemTestcases);
+        return repository.save(problemTestcases).getId();
+    }
+
+    @Transactional
+    public List<UUID> saveAll(List<PublishTestcasesRequest> publishTestcasesRequests) {
+        List<UUID> uuids = new ArrayList<>();
+        for (PublishTestcasesRequest request : publishTestcasesRequests) {
+            uuids.add(create(request));
+        }
+        return uuids;
+    }
+
+    private void setConcatenatedIOFields(ProblemTestcases target, List<Testcase> testcases) {
+        target.setInputs(join(testcases, Testcase::getInputData));
+        target.setOutputs(join(testcases, Testcase::getExpectedOutput));
+        target.setVisibleInputs(join(testcases, t -> t.isVisible() ? t.getInputData() : null));
+        target.setVisibleOutputs(join(testcases, t -> t.isVisible() ? t.getExpectedOutput() : null));
+    }
+
+    private String join(List<Testcase> testcases, Function<Testcase, String> extractor) {
+        return testcases.stream()
+                .map(extractor)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("\n"));
+    }
+}

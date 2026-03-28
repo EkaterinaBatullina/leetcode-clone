@@ -63,7 +63,7 @@ logging:
     root: INFO
 springdoc:
   packages-to-scan:
-    - com.technokratos.submissionserviceimpl.controller
+    - com.technokratos.controller
   paths-to-match:
     - /api/**
     - /internal/**
