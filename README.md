@@ -1,4 +1,4 @@
-# LeetCode Clone (Microservices Architecture)
+# LeetCode Clone (Microservices Architecture) (2025 - 2026 гг.)
 
 Проект представляет собой микросервисную платформу для решения алгоритмических задач (аналог LeetCode).
 
