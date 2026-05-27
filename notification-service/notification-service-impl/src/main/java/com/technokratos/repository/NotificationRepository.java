@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface NotificationRepository extends MongoRepository<Notification, String> {
@@ -13,4 +14,6 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     Page<Notification> findByStatus(Status status, Pageable pageable);
 
     Page<Notification> findByUserId(UUID userId, Pageable pageable);
+
+    List<Notification> findByStatus(Status status);
 }

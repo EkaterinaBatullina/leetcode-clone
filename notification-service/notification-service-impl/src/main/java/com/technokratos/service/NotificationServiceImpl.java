@@ -71,6 +71,31 @@ public class NotificationServiceImpl implements NotificationService {
         repository.save(notification);
     }
 
+    public void retryWelcomeNotification(Notification notification) {
+        log.info("Retrying failed notification for eventId={}, userId={}",
+                notification.getId(), notification.getUserId());
+
+        Timer.Sample sample = service.startTimer();
+        try {
+            sender.send(notification.getEmail(),
+                    "Welcome!",
+                    "Hello %s".formatted(notification.getUsername()));
+
+            notification.setStatus(Status.SAVE);
+            notification.setErrorType(null);
+            notification.setErrorMessage(null);
+            log.info("Retry successful for userId={}", notification.getUserId());
+            service.incrementSent();
+        } catch (Exception e) {
+            notification.setCreatedAt(Instant.now());
+            notification.setErrorType(e.getClass().getSimpleName());
+            notification.setErrorMessage(e.getMessage());
+            log.warn("Retry failed again for userId={}: {}", notification.getUserId(), e.getMessage());
+        }
+        service.stopTimer(sample);
+        repository.save(notification);
+    }
+
     @Override
     public Page<NotificationResponse> getAllByStatus(Status status, Pageable pageable) {
         log.info("Fetching notifications by status={} page={}", status, pageable.getPageNumber());

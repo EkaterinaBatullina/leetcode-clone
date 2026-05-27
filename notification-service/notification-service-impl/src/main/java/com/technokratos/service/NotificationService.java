@@ -15,6 +15,8 @@ public interface NotificationService {
 
     void sendWelcomeNotification(Notification notification);
 
+    void retryWelcomeNotification(Notification notification);
+
     Page<NotificationResponse> getAllByStatus(Status status, Pageable pageable);
 
     Page<NotificationResponse> getAllByUserId(UUID userId, Pageable pageable);
