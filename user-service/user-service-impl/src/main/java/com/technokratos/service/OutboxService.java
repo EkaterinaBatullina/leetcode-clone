@@ -8,5 +8,5 @@ public interface OutboxService {
 
     void updateStatus(UUID id, Status status);
 
-    void saveUserRegisteredOutboxEvent(UUID userId, String username, String email);
+    void save(String topic, String aggregateId, String type, Object eventPayload);
 }

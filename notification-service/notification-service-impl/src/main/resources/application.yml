@@ -13,6 +13,8 @@ spring:
     client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID}
     topic:
       user-registered: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
+    type-mappings: ${KAFKA_TYPE_MAPPINGS}
+
   data:
     mongodb:
       uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}?authSource=${MONGO_DATABASE}

@@ -1,7 +1,6 @@
 package com.technokratos.config;
 
 import com.technokratos.config.property.KafkaProperties;
-import com.technokratos.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.context.annotation.Bean;
@@ -29,25 +28,29 @@ public class KafkaConsumerConfig {
         consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getKeyDeserializer());
         consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getValueDeserializer());
         consumerConfig.put(JsonDeserializer.TRUSTED_PACKAGES, kafkaProperties.getTrustedPackages());
-        consumerConfig.put(JsonDeserializer.VALUE_DEFAULT_TYPE, kafkaProperties.getDefaultType());
+
+        consumerConfig.put(JsonDeserializer.TYPE_MAPPINGS, kafkaProperties.getTypeMappings());
+
         consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getGroupId());
         consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, kafkaProperties.isEnableAutoCommit());
         return consumerConfig;
     }
 
     @Bean
-    public ConsumerFactory<String, UserRegisteredEvent> consumerFactory() {
-        DefaultKafkaConsumerFactory<String, UserRegisteredEvent> factory =
+    public ConsumerFactory<String, Object> consumerFactory() {
+        DefaultKafkaConsumerFactory<String, Object> factory =
                 new DefaultKafkaConsumerFactory<>(consumerConfig());
-        ErrorHandlingDeserializer<UserRegisteredEvent> errorHandlingDeserializer =
-                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(UserRegisteredEvent.class));
+
+        ErrorHandlingDeserializer<Object> errorHandlingDeserializer =
+                new ErrorHandlingDeserializer<>(new JsonDeserializer<>());
+
         factory.setValueDeserializer(errorHandlingDeserializer);
         return factory;
     }
 
     @Bean
     public KafkaListenerContainerFactory<?> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties()

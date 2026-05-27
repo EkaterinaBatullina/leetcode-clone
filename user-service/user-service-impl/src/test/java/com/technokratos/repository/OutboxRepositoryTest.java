@@ -1,7 +1,7 @@
 package com.technokratos.repository;
 
 import com.technokratos.dto.enums.Status;
-import com.technokratos.model.OutboxEntity;
+import com.technokratos.model.OutboxEventEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -29,7 +29,7 @@ public class OutboxRepositoryTest {
     @Test
     void save() {
         UUID eventId = UUID.randomUUID();
-        OutboxEntity entity = OutboxEntity.builder()
+        OutboxEventEntity entity = OutboxEventEntity.builder()
                 .id(eventId)
                 .aggregateId("agg-1")
                 .type("TEST_TYPE")
@@ -56,7 +56,7 @@ public class OutboxRepositoryTest {
                 eventId, "agg-2", "LOCK_TEST", "{}", "topic", "NEW"
         );
 
-        List<OutboxEntity> events = outboxRepository.findAllNew(10);
+        List<OutboxEventEntity> events = outboxRepository.findAllNew(10);
 
         assertFalse(events.isEmpty());
         assertEquals(eventId, events.get(0).getId());

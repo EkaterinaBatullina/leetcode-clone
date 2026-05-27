@@ -11,4 +11,5 @@ public class KafkaProducerProperties {
     private String keySerializer;
     private String valueSerializer;
     private String userRegisteredTopic;
+    private String userRegisteredToken;
 }

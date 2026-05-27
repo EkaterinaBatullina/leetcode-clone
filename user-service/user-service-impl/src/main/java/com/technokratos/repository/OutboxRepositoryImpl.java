@@ -1,7 +1,7 @@
 package com.technokratos.repository;
 
 import com.technokratos.dto.enums.Status;
-import com.technokratos.model.OutboxEntity;
+import com.technokratos.model.OutboxEventEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,7 +19,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
     private static final String SQL_UPDATE_STATUS = "UPDATE outbox_events SET status = ? WHERE id = ?";
     private final JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<OutboxEntity> rowMapper = (rs, rowNum) -> OutboxEntity.builder()
+    private final RowMapper<OutboxEventEntity> rowMapper = (rs, rowNum) -> OutboxEventEntity.builder()
             .id(rs.getObject("id", UUID.class))
             .aggregateId(rs.getString("aggregate_id"))
             .type(rs.getString("type"))
@@ -30,7 +30,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
             .build();
 
     @Override
-    public void save(OutboxEntity entity) {
+    public void save(OutboxEventEntity entity) {
         jdbcTemplate.update(SQL_INSERT_EVENT,
                 entity.getId(),
                 entity.getAggregateId(),
@@ -43,7 +43,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
 
     @Override
     @Transactional
-    public List<OutboxEntity> findAllNew(int limit) {
+    public List<OutboxEventEntity> findAllNew(int limit) {
         return jdbcTemplate.query(SQL_GET_NEW_EVENTS, rowMapper, limit);
     }
 

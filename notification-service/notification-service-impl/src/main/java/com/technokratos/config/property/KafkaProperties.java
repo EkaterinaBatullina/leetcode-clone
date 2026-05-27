@@ -3,6 +3,9 @@ package com.technokratos.config.property;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @ConfigurationProperties(prefix = "spring.kafka")
 public class KafkaProperties {
@@ -16,4 +19,5 @@ public class KafkaProperties {
     private String defaultType;
     private String trustedPackages;
     private boolean enableAutoCommit;
+    private String typeMappings;
 }

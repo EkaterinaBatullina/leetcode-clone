@@ -18,6 +18,7 @@ spring:
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     user-registered-topic: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
+    user-registered-token: ${KAFKA_USER_REGISTERED_TOKEN_NAME}
 
 rsa:
   private-key: ${RSA_PRIVATE_KEY}

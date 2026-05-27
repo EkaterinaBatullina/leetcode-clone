@@ -1,9 +1,11 @@
 package com.technokratos.producer;
 
-import com.technokratos.model.OutboxEntity;
+import com.technokratos.model.OutboxEventEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +18,19 @@ public class KafkaProducer {
     private final KafkaTemplate<String, Object> template;
     private final Executor outboxExecutor;
 
-    public void publishEvent(OutboxEntity entity, Runnable onSuccess, Consumer<Throwable> onFailure) {
-        template.send(entity.getTopic(), entity.getAggregateId(), entity.getPayload())
+    public void publishEvent(OutboxEventEntity entity, Runnable onSuccess, Consumer<Throwable> onFailure) {
+        ProducerRecord<String, Object> record = new ProducerRecord<>(
+                entity.getTopic(),
+                entity.getAggregateId(),
+                entity.getPayload()
+        );
+
+        record.headers().add(
+                "__TypeId__",
+                entity.getType().getBytes(StandardCharsets.UTF_8)
+        );
+
+        template.send(record)
                 .thenAcceptAsync(result -> {
                     log.info("Event sent! Topic: {}, Offset: {}", entity.getTopic(), result.getRecordMetadata().offset());
                     onSuccess.run();

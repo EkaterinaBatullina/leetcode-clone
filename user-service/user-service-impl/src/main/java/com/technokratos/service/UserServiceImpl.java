@@ -1,13 +1,16 @@
 package com.technokratos.service;
 
+import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Role;
 import com.technokratos.dto.request.AuthenticationRequest;
 import com.technokratos.dto.request.UserFullRequest;
 import com.technokratos.dto.request.RoleRequest;
 import com.technokratos.dto.request.UserPartialRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
+import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
+import com.technokratos.model.OutboxEventEntity;
 import com.technokratos.model.UserEntity;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.auth.AuthenticationService;
@@ -36,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final OutboxService outboxService;
+    private final KafkaProducerProperties properties;
 
     @Override
     @Cacheable(value = "users", key = "T(com.technokratos.util.SecurityUtil).getCurrentUserId()")
@@ -72,7 +76,13 @@ public class UserServiceImpl implements UserService {
         UUID uuid = userRepository.save(userEntity);
         userEntity.setUuid(uuid);
         statisticService.create(uuid);
-        outboxService.saveUserRegisteredOutboxEvent(uuid, userEntity.getUsername(), userEntity.getEmail());
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                UUID.randomUUID(),
+                uuid,
+                userEntity.getUsername(),
+                userEntity.getEmail()
+        );
+        outboxService.save(properties.getUserRegisteredTopic(), uuid.toString(), properties.getUserRegisteredToken(), event);
         return authenticationService.signIn(
                 new AuthenticationRequest(userEntity.getUsername(), rawPassword)
         );

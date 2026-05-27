@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OutboxEntity {
+public class OutboxEventEntity {
     private UUID id;
     private String aggregateId;
     private String type;
