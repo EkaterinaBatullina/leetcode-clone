@@ -4,7 +4,7 @@ import com.technokratos.dto.response.StatisticResponse;
 import com.technokratos.exception.StatisticsNotFoundException;
 import com.technokratos.mapper.StatisticMapper;
 import com.technokratos.model.StatisticEntity;
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.enums.Difficulty;
 import com.technokratos.repository.StatisticRepository;
 import com.technokratos.dto.request.UserUpdateRequest;
 import com.technokratos.enums.SubmissionStatus;

@@ -59,10 +59,10 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.4.14'
     implementation 'com.technokratos:logging-starter:1.0-SNAPSHOT'
     implementation project(':user-service:user-service-api')
+    implementation project(':user-service:user-service-db')
+    implementation project(':submission-service:submission-service-api')
+    implementation project(':problem-service:problem-service-api')
     implementation project(':common-event')
-    implementation 'com.technokratos:user-service-db:1.0-SNAPSHOT'
-    implementation 'com.technokratos:problem-service-api:1.0-SNAPSHOT'
-    implementation 'com.technokratos:submission-service-api:1.0-SNAPSHOT'
 
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
 
