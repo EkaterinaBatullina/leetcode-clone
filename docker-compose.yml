@@ -8,9 +8,12 @@ services:
     networks:
       - app-net
     depends_on:
-      - localRabbitMQ
-      - postgres
-      - kafka
+      localRabbitMQ:
+        condition: service_started
+      postgres:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     env_file: leetcode.conf
     restart: on-failure
 
@@ -22,9 +25,12 @@ services:
     networks:
       - app-net
     depends_on:
-      - problem-postgres
-      - kafka
-      - consul
+      problem-postgres:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      consul:
+        condition: service_started
     env_file: leetcode.conf
     restart: on-failure
 
@@ -32,14 +38,18 @@ services:
     build:
       context: ./submission-service/submission-service-impl
     ports:
-      - "8080:8080"
+      - "8082:8080"
     networks:
       - app-net
     depends_on:
-      - mongodb
-      - kafka
-      - localRabbitMQ
-      - consul
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      localRabbitMQ:
+        condition: service_started
+      consul:
+        condition: service_started
     env_file: leetcode.conf
     restart: on-failure
 
@@ -51,8 +61,10 @@ services:
     networks:
       - app-net
     depends_on:
-      - mongodb
-      - kafka
+      mongodb:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     env_file: leetcode.conf
     restart: on-failure
 
@@ -123,7 +135,7 @@ services:
     restart: unless-stopped
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.5.0
     ports:
       - "9092:9092"
     volumes:
@@ -134,6 +146,11 @@ services:
       - zookeeper
     env_file: leetcode.conf
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   consul:
     image: consul:1.15
@@ -170,9 +187,10 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "127.0.0.1:8085:80"
+      - "8085:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    command: ["nginx", "-g", "daemon off;"]
     networks:
       - app-net
     restart: unless-stopped

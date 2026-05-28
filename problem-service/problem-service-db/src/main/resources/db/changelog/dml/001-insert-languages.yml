@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-languages
+      author: elise
+      changes:
+        - sqlFile:
+            path: classpath:db\sql\DML\insert-languages.sql

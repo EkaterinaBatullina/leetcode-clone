@@ -1,4 +1,7 @@
-FROM eclipse-temurin:20-jre
+FROM eclipse-temurin:21-jre
+
 WORKDIR /app
-COPY target/submission-service-impl-0.0.1-SNAPSHOT.jar app.jar
+
+COPY build/libs/submission-service-impl-0.0.1-SNAPSHOT.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
