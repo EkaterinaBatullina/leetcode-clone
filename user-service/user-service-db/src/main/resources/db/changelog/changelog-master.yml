@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/6-insert-admin.yml
   - include:
       file: db/changelog/7-create-outbox-table.yml
+  - include:
+      file: db/changelog/8-add-topic-column-to-outbox.yml

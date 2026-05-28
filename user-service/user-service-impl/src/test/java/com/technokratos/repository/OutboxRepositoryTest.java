@@ -51,10 +51,16 @@ public class OutboxRepositoryTest {
     @Test
     void findAllNew_withLocking() {
         UUID eventId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status) VALUES (?, ?, ?, ?::jsonb, ?, ?)",
-                eventId, "agg-2", "LOCK_TEST", "{}", "topic", "NEW"
-        );
+
+        OutboxEventEntity entity = OutboxEventEntity.builder()
+                .id(eventId)
+                .aggregateId("agg-2")
+                .type("LOCK_TEST")
+                .payload("{}")
+                .topic("topic")
+                .status(Status.NEW)
+                .build();
+        outboxRepository.save(entity);
 
         List<OutboxEventEntity> events = outboxRepository.findAllNew(10);
 
@@ -66,10 +72,16 @@ public class OutboxRepositoryTest {
     @Test
     void updateStatus() {
         UUID eventId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status) VALUES (?, ?, ?, ?::jsonb, ?, ?)",
-                eventId, "agg-3", "UPDATE_TEST", "{}", "topic", "NEW"
-        );
+
+        OutboxEventEntity entity = OutboxEventEntity.builder()
+                .id(eventId)
+                .aggregateId("agg-3")
+                .type("UPDATE_TEST")
+                .payload("{}")
+                .topic("topic")
+                .status(Status.NEW)
+                .build();
+        outboxRepository.save(entity);
 
         outboxRepository.updateStatus(eventId, Status.SENT);
 

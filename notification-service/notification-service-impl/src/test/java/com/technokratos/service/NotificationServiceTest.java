@@ -2,16 +2,19 @@ package com.technokratos.service;
 
 import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.response.NotificationResponse;
-import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.mapper.NotificationMapper;
 import com.technokratos.model.Notification;
 import com.technokratos.repository.NotificationRepository;
+import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.sender.EmailSender;
+import io.micrometer.core.instrument.Timer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
@@ -34,8 +37,23 @@ public class NotificationServiceTest {
     NotificationRepository repository;
     @Mock
     NotificationMapper mapper;
+    @Mock
+    NotificationMetricsService notificationMetricsService;
     @InjectMocks
     NotificationServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        try {
+            java.lang.reflect.Field field = NotificationServiceImpl.class.getDeclaredField("service");
+            field.setAccessible(true);
+            field.set(service, notificationMetricsService);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        lenient().when(notificationMetricsService.startTimer()).thenReturn(Mockito.mock(Timer.Sample.class));
+    }
 
     @Test
     void saveUserRegisteredEvent_success() {
@@ -112,6 +130,7 @@ public class NotificationServiceTest {
         verify(sender).send(notification.getEmail(),
                 "Welcome!", "Hello %s".formatted(notification.getUsername()));
         verify(repository).save(any(Notification.class));
+        verify(notificationMetricsService).incrementSent();
     }
 
     @Test
@@ -143,6 +162,7 @@ public class NotificationServiceTest {
         verify(sender).send(notification.getEmail(),
                 "Welcome!",  "Hello %s".formatted(notification.getUsername()));
         verify(repository).save(any(Notification.class));
+        verify(notificationMetricsService).incrementFailed();
     }
 
     @Test
