@@ -1,6 +1,6 @@
 package com.technokratos.rabbitmq;
 
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.enums.Difficulty;
 import com.technokratos.dto.request.SubmissionRequest;
 import com.technokratos.dto.request.UserUpdateRequest;
 import com.technokratos.service.ProblemTestcasesService;

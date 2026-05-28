@@ -1,7 +1,7 @@
 package com.technokratos.kafka.producer;
 
-import com.technokratos.problemserviceapi.dto.request.ProblemsPublishedResponse;
-import com.technokratos.problemserviceapi.dto.response.PublishTestcasesResponse;
+import com.technokratos.dto.request.ProblemsPublishedResponse;
+import com.technokratos.dto.response.PublishTestcasesResponse;
 import com.technokratos.dto.response.RunResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

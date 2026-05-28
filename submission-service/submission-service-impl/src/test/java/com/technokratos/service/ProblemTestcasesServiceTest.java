@@ -1,8 +1,8 @@
 package com.technokratos.service;
 
-import com.technokratos.problemserviceapi.dto.request.PublishTestcasesRequest;
-import com.technokratos.problemserviceapi.dto.response.TestcaseResponse;
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.dto.request.PublishTestcasesRequest;
+import com.technokratos.dto.response.TestcaseResponse;
+import com.technokratos.enums.Difficulty;
 import com.technokratos.entity.ProblemTestcases;
 import com.technokratos.entity.Testcase;
 import com.technokratos.mapper.ProblemTestcasesMapper;

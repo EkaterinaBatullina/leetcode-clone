@@ -1,6 +1,6 @@
 package com.technokratos.service.base;
 
-import com.technokratos.problemserviceapi.dto.request.RunRequest;
+import com.technokratos.dto.request.RunRequest;
 import com.technokratos.enums.Action;
 
 public interface BaseJudge0Service {

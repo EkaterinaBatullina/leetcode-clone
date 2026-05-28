@@ -1,6 +1,6 @@
 package com.technokratos.mapper;
 
-import com.technokratos.problemserviceapi.dto.response.TestcaseResponse;
+import com.technokratos.dto.response.TestcaseResponse;
 import com.technokratos.entity.Testcase;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

@@ -13,7 +13,7 @@ import com.technokratos.config.properties.Judge0Properties;
 import com.technokratos.entity.Testcase;
 import com.technokratos.redis.RedisKeysUtil;
 import com.technokratos.service.base.BaseJudge0Service;
-import com.technokratos.problemserviceapi.dto.request.RunRequest;
+import com.technokratos.dto.request.RunRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;

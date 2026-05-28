@@ -1,6 +1,6 @@
 package com.technokratos.entity;
 
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.enums.Difficulty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

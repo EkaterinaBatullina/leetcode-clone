@@ -1,6 +1,6 @@
 package com.technokratos.service;
 
-import com.technokratos.problemserviceapi.dto.request.RunRequest;
+import com.technokratos.dto.request.RunRequest;
 import com.technokratos.dto.request.Judge0BatchRequest;
 import com.technokratos.dto.request.Judge0Request;
 import com.technokratos.dto.request.SubmissionRequest;

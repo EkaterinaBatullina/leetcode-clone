@@ -1,6 +1,6 @@
 package com.technokratos.repository;
 
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.enums.Difficulty;
 import com.technokratos.entity.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

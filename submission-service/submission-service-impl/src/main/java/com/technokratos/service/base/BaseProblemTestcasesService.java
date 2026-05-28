@@ -1,7 +1,7 @@
 package com.technokratos.service.base;
 
-import com.technokratos.problemserviceapi.dto.request.PublishTestcasesRequest;
-import com.technokratos.problemserviceapi.enums.Difficulty;
+import com.technokratos.dto.request.PublishTestcasesRequest;
+import com.technokratos.enums.Difficulty;
 import com.technokratos.entity.Testcase;
 
 import java.util.List;

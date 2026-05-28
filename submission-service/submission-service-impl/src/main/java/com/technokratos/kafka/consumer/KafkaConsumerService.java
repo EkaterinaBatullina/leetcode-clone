@@ -1,11 +1,11 @@
 package com.technokratos.kafka.consumer;
 
-import com.technokratos.problemserviceapi.dto.request.ProblemsPublishedResponse;
-import com.technokratos.problemserviceapi.dto.request.PublishProblemsRequest;
-import com.technokratos.problemserviceapi.dto.request.PublishTestcasesRequest;
-import com.technokratos.problemserviceapi.dto.request.RunRequest;
-import com.technokratos.problemserviceapi.dto.response.PublishTestcasesResponse;
-import com.technokratos.problemserviceapi.enums.PublishStatus;
+import com.technokratos.dto.request.ProblemsPublishedResponse;
+import com.technokratos.dto.request.PublishProblemsRequest;
+import com.technokratos.dto.request.PublishTestcasesRequest;
+import com.technokratos.dto.request.RunRequest;
+import com.technokratos.dto.response.PublishTestcasesResponse;
+import com.technokratos.enums.PublishStatus;
 import com.technokratos.enums.Action;
 import com.technokratos.kafka.producer.KafkaProducerService;
 import com.technokratos.service.ProblemTestcasesService;
