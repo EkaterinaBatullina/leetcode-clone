@@ -38,7 +38,6 @@ public class OutboxServiceImpl implements OutboxService {
         }
     }
 
-    @Transactional
     public void updateStatus(UUID id, Status status) {
         repository.updateStatus(id, status);
     }

@@ -1,7 +1,9 @@
 package com.technokratos.service.auth;
 
+import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Role;
 import com.technokratos.dto.request.AuthenticationRequest;
+import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.model.UserEntity;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.OutboxService;
@@ -26,6 +28,7 @@ public class UserValidationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OutboxService service;
+    private final KafkaProducerProperties properties;
 
     public UserEntity validateUser(AuthenticationRequest request) {
         UserEntity user = userRepository.findByUsername(request.username())
@@ -63,8 +66,21 @@ public class UserValidationService {
         newUser.setUuid(userId);
         log.info("Created new user with UUID: {}", userId);
 
-        service.saveUserRegisteredOutboxEvent(userId, username, email);
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                UUID.randomUUID(),
+                userId,
+                username,
+                email
+        );
+
+        service.save(
+                properties.getUserRegisteredTopic(),
+                userId.toString(),
+                properties.getUserRegisteredToken(),
+                event
+        );
 
         return newUser;
     }
+
 }

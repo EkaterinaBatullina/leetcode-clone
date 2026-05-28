@@ -1,5 +1,6 @@
 package com.technokratos.service;
 
+import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Role;
 import com.technokratos.dto.request.AuthenticationRequest;
 import com.technokratos.dto.request.RoleRequest;
@@ -48,6 +49,10 @@ public class UserServiceTest {
     UserRepository userRepository;
     @Mock
     UserMapper mapper;
+    @Mock
+    private KafkaProducerProperties properties;
+    @Mock
+    private OutboxService outboxService;
 
     @Test
     void getById() {
@@ -165,6 +170,11 @@ public class UserServiceTest {
         UserEntity userEntity =
                 new UserEntity(expectedUuid, expectedUsername, expectedEmail, "encodedPassword", Role.USER);
 
+        when(properties.getUserRegisteredTopic()).thenReturn("user-registered-topic");
+        when(properties.getUserRegisteredToken()).thenReturn("user_registered");
+
+        doNothing().when(outboxService).save(anyString(), anyString(), anyString(), any());
+
         when(mapper.toEntity(any(UserFullRequest.class))).thenReturn(userEntity);
         when(userRepository.save(any(UserEntity.class))).thenReturn(expectedUuid);
         when(authenticationService.signIn(any(AuthenticationRequest.class)))
@@ -181,6 +191,14 @@ public class UserServiceTest {
         verify(userRepository).save(any(UserEntity.class));
         verify(passwordEncoder).encode(expectedPassword);
         verify(statisticService).create(expectedUuid);
+
+        verify(outboxService).save(
+                eq("user-registered-topic"),
+                eq(expectedUuid.toString()),
+                eq("user_registered"),
+                any()
+        );
+
         verify(authenticationService).signIn(
                 argThat(authRequest -> authRequest.username().equals(expectedUsername) &&
                         authRequest.password().equals(expectedPassword))

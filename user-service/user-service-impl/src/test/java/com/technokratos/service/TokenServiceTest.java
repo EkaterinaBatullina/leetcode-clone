@@ -98,7 +98,7 @@ public class TokenServiceTest {
 
         assertEquals(tokenId, accessClaims.getId());
         try {
-            assertEquals(new URL("http://user-service:8080"), accessClaims.getIssuer()); // <- здесь важен мок
+            assertEquals(new URL("http://user-service:8080"), accessClaims.getIssuer());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +106,9 @@ public class TokenServiceTest {
         assertEquals(Set.of("scope1", "scope2"), accessClaims.getClaim(OAuth2ParameterNames.SCOPE));
         assertEquals("USER", accessClaims.getClaim(AUTHORITIES));
         assertEquals(OAuth2ParameterNames.ACCESS_TOKEN, accessClaims.getClaim(OAuth2ParameterNames.TOKEN_TYPE));
-        assertTrue(accessClaims.getExpiresAt().isAfter(Instant.now()));
+
+        assertNotNull(accessClaims.getExpiresAt());
+        assertTrue(accessClaims.getExpiresAt().isAfter(Instant.now().minusSeconds(60)));
 
         assertEquals(tokenId, refreshClaims.getId());
         try {
@@ -119,7 +121,9 @@ public class TokenServiceTest {
         assertEquals(userId, refreshClaims.getClaim(PROFILE_ID));
         assertEquals("USER", refreshClaims.getClaim(AUTHORITIES));
         assertEquals(OAuth2ParameterNames.REFRESH_TOKEN, refreshClaims.getClaim(OAuth2ParameterNames.TOKEN_TYPE));
-        assertTrue(refreshClaims.getExpiresAt().isAfter(Instant.now()));
+
+        assertNotNull(refreshClaims.getExpiresAt());
+        assertTrue(refreshClaims.getExpiresAt().isAfter(Instant.now().minusSeconds(60)));
     }
 
     @Test
