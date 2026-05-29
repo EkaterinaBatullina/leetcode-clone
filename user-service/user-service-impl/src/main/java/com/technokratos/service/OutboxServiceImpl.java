@@ -24,7 +24,6 @@ public class OutboxServiceImpl implements OutboxService {
     private final ObjectMapper mapper;
 
     @Override
-    @Transactional
     public void processOutbox() {
         List<OutboxEventEntity> pending = repository.pollAndLock(50);
 

@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class TokenServiceTest {
     @InjectMocks
-    private TokenService tokenService;
+    private TokenService service;
     @Mock
     private JwtEncoder jwtEncoder;
     @Mock
@@ -51,7 +51,7 @@ public class TokenServiceTest {
         user.setUuid(userId);
         user.setUsername(username);
 
-        String tokenId = tokenService.generateTokenId(user);
+        String tokenId = service.generateTokenId(user);
         String expected = Base64.getEncoder().encodeToString((userId + "_" + username).getBytes());
 
         assertEquals(expected, tokenId);
@@ -81,7 +81,7 @@ public class TokenServiceTest {
 
         String tokenId = "token-id";
 
-        Pair<Jwt, Jwt> tokens = tokenService.createTokenPair(registeredClient, user, tokenId);
+        Pair<Jwt, Jwt> tokens = service.createTokenPair(registeredClient, user, tokenId);
 
         assertSame(accessJwt, tokens.getLeft());
         assertSame(refreshJwt, tokens.getRight());
@@ -129,6 +129,6 @@ public class TokenServiceTest {
     @Test
     void createTokenPair_nullUser_throwsException() {
         RegisteredClient client = mock(RegisteredClient.class);
-        assertThrows(NullPointerException.class, () -> tokenService.createTokenPair(client, null, "tokenId"));
+        assertThrows(NullPointerException.class, () -> service.createTokenPair(client, null, "tokenId"));
     }
 }

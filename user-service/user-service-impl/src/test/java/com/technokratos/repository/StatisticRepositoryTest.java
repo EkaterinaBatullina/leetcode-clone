@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles(profiles = "test")
 public class StatisticRepositoryTest {
     @Autowired
-    StatisticRepositoryImpl statisticRepository;
+    StatisticRepositoryImpl repository;
     @Autowired
     JdbcTemplate jdbcTemplate;
 
@@ -42,7 +42,7 @@ public class StatisticRepositoryTest {
                 .hard(0)
                 .successPercentage(0)
                 .build();
-        statisticRepository.save(statistic);
+        repository.save(statistic);
 
         String query = "SELECT user_id FROM statistic WHERE user_id = ?";
         UUID result = jdbcTemplate.queryForObject(query, UUID.class, userId);
@@ -61,7 +61,7 @@ public class StatisticRepositoryTest {
                 "INSERT INTO statistic (user_id, total_solved_tasks, total_attempts, solved_easy_tasks, solved_medium_tasks, solved_hard_tasks, success_percentage) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(insertStatisticQuery, userId, 0, 0, 0, 0, 0, 0);
 
-        Optional<StatisticEntity> result = statisticRepository.findById(userId);
+        Optional<StatisticEntity> result = repository.findById(userId);
         assertTrue(result.isPresent());
         assertEquals(userId, result.get().getUserId());
     }
@@ -81,9 +81,9 @@ public class StatisticRepositoryTest {
                 .hard(0)
                 .successPercentage(0)
                 .build();
-        statisticRepository.save(statistic);
+        repository.save(statistic);
 
-        statisticRepository.update(userId, 1, 1, 0, 0);
+        repository.update(userId, 1, 1, 0, 0);
 
         Map<String, Object> result = jdbcTemplate.queryForMap("SELECT total_solved_tasks, solved_easy_tasks, total_attempts, success_percentage FROM statistic WHERE user_id = ?", userId);
         assertEquals(1, result.get("total_solved_tasks"));
@@ -97,7 +97,7 @@ public class StatisticRepositoryTest {
         UUID nonExistentUser = UUID.randomUUID();
 
         assertThrows(StatisticsNotFoundException.class,
-                () -> statisticRepository.update(nonExistentUser, 1, 1, 0, 0)
+                () -> repository.update(nonExistentUser, 1, 1, 0, 0)
         );
     }
 }

@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-attempts-to-outbox
+      author: Ekaterina Batullina
+      changes:
+        - addColumn:
+            tableName: outbox_events
+            columns:
+              - column:
+                  name: attempts
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

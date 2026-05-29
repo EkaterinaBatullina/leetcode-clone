@@ -16,6 +16,7 @@ public class OutboxEventEntity {
     private String payload;
     private String topic;
     private Status status;
+    private Integer attempts;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

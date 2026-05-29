@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/8-add-topic-column-to-outbox.yml
   - include:
       file: db/changelog/9-add-updated-at-to-outbox-and-index.yml
+  - include:
+      file: db/changelog/10-add-attempts-to-outbox.yml

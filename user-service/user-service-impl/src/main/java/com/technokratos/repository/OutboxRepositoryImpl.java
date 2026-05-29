@@ -58,11 +58,15 @@ public class OutboxRepositoryImpl implements OutboxRepository {
 
     private static final String SQL_RESET_STUCK_EVENTS = """
         UPDATE outbox_events
-        SET status = 'NEW',
+        SET status = CASE 
+                        WHEN attempts >= 3 THEN 'FAILED'
+                        ELSE 'NEW'
+                     END,
+            attempts = attempts + 1,
             updated_at = NOW()
         WHERE status = 'PROCESSING'
           AND updated_at < NOW() - INTERVAL '5 minutes'
-        """;
+    """;
 
     private final JdbcTemplate jdbcTemplate;
 

@@ -46,7 +46,7 @@ public class UserServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
     @Mock
-    UserRepository userRepository;
+    UserRepository repository;
     @Mock
     UserMapper mapper;
     @Mock
@@ -63,7 +63,7 @@ public class UserServiceTest {
         UserResponse expectedResponse = new UserResponse(uuid, username, email, Role.USER.name());
 
         when(mapper.toResponse(entity)).thenReturn(expectedResponse);
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(entity));
+        when(repository.findById(uuid)).thenReturn(Optional.of(entity));
 
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
@@ -72,7 +72,7 @@ public class UserServiceTest {
             assertEquals(expectedResponse, actualResponse);
 
             verify(mapper).toResponse(entity);
-            verify(userRepository).findById(uuid);
+            verify(repository).findById(uuid);
         }
     }
 
@@ -82,11 +82,11 @@ public class UserServiceTest {
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
 
-            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+            when(repository.findById(uuid)).thenReturn(Optional.empty());
 
             assertThrows(UserNotFoundException.class, () -> userService.getById());
 
-            verify(userRepository).findById(uuid);
+            verify(repository).findById(uuid);
             verifyNoInteractions(mapper);
         }
     }
@@ -100,23 +100,23 @@ public class UserServiceTest {
         UserResponse expectedResponse = new UserResponse(uuid, username, email, Role.USER.name());
 
         when(mapper.toResponse(entity)).thenReturn(expectedResponse);
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(entity));
+        when(repository.findByUsername(username)).thenReturn(Optional.of(entity));
 
         UserResponse actualResponse = userService.getByUsername(username);
 
         assertEquals(actualResponse, expectedResponse);
         verify(mapper).toResponse(entity);
-        verify(userRepository).findByUsername(username);
+        verify(repository).findByUsername(username);
     }
 
     @Test
     void getByUsername_userNotFound() {
         String username = "nonexistent";
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(repository.findByUsername(username)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getByUsername(username));
 
-        verify(userRepository).findByUsername(username);
+        verify(repository).findByUsername(username);
         verifyNoInteractions(mapper);
     }
 
@@ -132,7 +132,7 @@ public class UserServiceTest {
         Pageable pageable = Mockito.mock(Pageable.class);
         PageImpl<UserEntity> expectedPage = new PageImpl<>(entities, pageable, entities.size());
 
-        when(userRepository.findAll(pageable)).thenReturn(expectedPage);
+        when(repository.findAll(pageable)).thenReturn(expectedPage);
         when(mapper.toResponse(entity)).thenReturn(response);
 
         Page<UserResponse> actualPage = userService.getAll(pageable);
@@ -141,21 +141,21 @@ public class UserServiceTest {
         assertEquals(1, actualPage.getContent().size());
         assertEquals(response, actualPage.getContent().get(0));
         verify(mapper).toResponse(entity);
-        verify(userRepository).findAll(pageable);
+        verify(repository).findAll(pageable);
 
     }
 
     @Test
     void delete() {
         UUID uuid = UUID.randomUUID();
-        doNothing().when(userRepository).deleteById(uuid);
+        doNothing().when(repository).deleteById(uuid);
 
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
 
             userService.delete();
 
-            verify(userRepository).deleteById(uuid);
+            verify(repository).deleteById(uuid);
         }
     }
 
@@ -176,7 +176,7 @@ public class UserServiceTest {
         doNothing().when(outboxService).save(anyString(), anyString(), anyString(), any());
 
         when(mapper.toEntity(any(UserFullRequest.class))).thenReturn(userEntity);
-        when(userRepository.save(any(UserEntity.class))).thenReturn(expectedUuid);
+        when(repository.save(any(UserEntity.class))).thenReturn(expectedUuid);
         when(authenticationService.signIn(any(AuthenticationRequest.class)))
                 .thenReturn(new TokenCoupleResponse(expectedAccessToken, expectedRefreshToken));
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
@@ -188,7 +188,7 @@ public class UserServiceTest {
 
         assertEquals(expectedAccessToken, response.accessToken());
         assertEquals(expectedRefreshToken, response.refreshToken());
-        verify(userRepository).save(any(UserEntity.class));
+        verify(repository).save(any(UserEntity.class));
         verify(passwordEncoder).encode(expectedPassword);
         verify(statisticService).create(expectedUuid);
 
@@ -215,8 +215,8 @@ public class UserServiceTest {
         UserEntity entity = new UserEntity(uuid, username, email, password, Role.USER);
         UserFullRequest request = new UserFullRequest(username, email, password);
 
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(entity));
-        doNothing().when(userRepository).update(any(UserEntity.class));
+        when(repository.findById(uuid)).thenReturn(Optional.of(entity));
+        doNothing().when(repository).update(any(UserEntity.class));
         when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
 
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
@@ -225,8 +225,8 @@ public class UserServiceTest {
             userService.update(request);
         }
 
-        verify(userRepository).findById(uuid);
-        verify(userRepository).update(any(UserEntity.class));
+        verify(repository).findById(uuid);
+        verify(repository).update(any(UserEntity.class));
         verify(passwordEncoder).encode(password);
     }
 
@@ -238,12 +238,12 @@ public class UserServiceTest {
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
 
-            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+            when(repository.findById(uuid)).thenReturn(Optional.empty());
 
             assertThrows(UserNotFoundException.class, () -> userService.update(request));
 
-            verify(userRepository).findById(uuid);
-            verify(userRepository, never()).update(any());
+            verify(repository).findById(uuid);
+            verify(repository, never()).update(any());
         }
     }
 
@@ -255,8 +255,8 @@ public class UserServiceTest {
         UserEntity entity = new UserEntity(uuid, username, null, password, Role.USER);
         UserPartialRequest request = new UserPartialRequest(username, null, password);
 
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(entity));
-        doNothing().when(userRepository).update(any(UserEntity.class));
+        when(repository.findById(uuid)).thenReturn(Optional.of(entity));
+        doNothing().when(repository).update(any(UserEntity.class));
         when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
 
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
@@ -265,9 +265,9 @@ public class UserServiceTest {
             userService.patch(request);
         }
 
-        verify(userRepository).findById(uuid);
+        verify(repository).findById(uuid);
         verify(passwordEncoder).encode(password);
-        verify(userRepository).update(any(UserEntity.class));
+        verify(repository).update(any(UserEntity.class));
     }
 
     @Test
@@ -278,12 +278,12 @@ public class UserServiceTest {
         try (MockedStatic<SecurityUtil> mocked = mockStatic(SecurityUtil.class)) {
             mocked.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
 
-            when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+            when(repository.findById(uuid)).thenReturn(Optional.empty());
 
             assertThrows(UserNotFoundException.class, () -> userService.patch(request));
 
-            verify(userRepository).findById(uuid);
-            verify(userRepository, never()).update(any());
+            verify(repository).findById(uuid);
+            verify(repository, never()).update(any());
         }
     }
 
@@ -293,13 +293,13 @@ public class UserServiceTest {
         RoleRequest request = new RoleRequest(Role.ADMIN.name());
         UserEntity entity = new UserEntity(uuid, "username", "email", "password", Role.USER);
 
-        when(userRepository.findById(uuid)).thenReturn(Optional.of(entity));
-        doNothing().when(userRepository).updateRole(any(UserEntity.class));
+        when(repository.findById(uuid)).thenReturn(Optional.of(entity));
+        doNothing().when(repository).updateRole(any(UserEntity.class));
 
         userService.updateRole(uuid, request);
 
-        verify(userRepository).findById(uuid);
-        verify(userRepository).updateRole(any(UserEntity.class));
+        verify(repository).findById(uuid);
+        verify(repository).updateRole(any(UserEntity.class));
     }
 
     @Test
@@ -307,11 +307,11 @@ public class UserServiceTest {
         UUID uuid = UUID.randomUUID();
         RoleRequest request = new RoleRequest(Role.ADMIN.name());
 
-        when(userRepository.findById(uuid)).thenReturn(Optional.empty());
+        when(repository.findById(uuid)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.updateRole(uuid, request));
 
-        verify(userRepository).findById(uuid);
-        verify(userRepository, never()).updateRole(any());
+        verify(repository).findById(uuid);
+        verify(repository, never()).updateRole(any());
     }
 }

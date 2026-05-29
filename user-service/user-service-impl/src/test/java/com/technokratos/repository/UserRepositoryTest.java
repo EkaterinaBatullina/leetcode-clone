@@ -30,7 +30,7 @@ public class UserRepositoryTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
     @Autowired
-    UserRepository userRepository;
+    UserRepository repository;
 
     @Test
     void save() {
@@ -53,7 +53,7 @@ public class UserRepositoryTest {
                 .password("password")
                 .role(Role.USER)
                 .build();
-        userRepository.save(entity);
+        repository.save(entity);
 
         List<UserEntity> secondResult = jdbcTemplate.query(query,
                 ps -> ps.setString(1, "save"),
@@ -101,7 +101,7 @@ public class UserRepositoryTest {
                 .password("newPassword")
                 .role(Role.USER)
                 .build();
-        userRepository.update(user);
+        repository.update(user);
 
         jdbcTemplate.query((String) checkQuery, rs -> {
             assertEquals("newUsername", rs.getString("username"));
@@ -121,7 +121,7 @@ public class UserRepositoryTest {
                 .role(Role.USER)
                 .build();
 
-        assertThrows(UserNotFoundException.class, () -> userRepository.update(user));
+        assertThrows(UserNotFoundException.class, () -> repository.update(user));
     }
 
     @Test
@@ -149,7 +149,7 @@ public class UserRepositoryTest {
                 .role(Role.ADMIN)
                 .build();
 
-        userRepository.updateRole(entity);
+        repository.updateRole(entity);
 
         Optional<UserEntity> result = jdbcTemplate.queryForStream(
                 "SELECT id, username, email, password, role FROM \"user\" WHERE id = ?",
@@ -178,7 +178,7 @@ public class UserRepositoryTest {
                 .role(Role.ADMIN)
                 .build();
 
-        assertThrows(UserNotFoundException.class, () -> userRepository.updateRole(user));
+        assertThrows(UserNotFoundException.class, () -> repository.updateRole(user));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class UserRepositoryTest {
                 .queryForList("SELECT id FROM \"user\" WHERE id = '%s'".formatted(id));
         assertEquals(1, resultFirst.size());
 
-        userRepository.deleteById(id);
+        repository.deleteById(id);
 
         val resultSecond = jdbcTemplate
                 .queryForList("SELECT id FROM \"user\" WHERE id = '%s'".formatted(id));
@@ -201,7 +201,7 @@ public class UserRepositoryTest {
     @Test
     void deleteById_notFound_throwsException() {
         UUID nonExistentId = UUID.randomUUID();
-        assertThrows(UserNotFoundException.class, () -> userRepository.deleteById(nonExistentId));
+        assertThrows(UserNotFoundException.class, () -> repository.deleteById(nonExistentId));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class UserRepositoryTest {
                 .queryForList("SELECT id FROM \"user\" WHERE username = 'deleteUsername'");
         assertEquals(1, resultFirst.size());
 
-        userRepository.deleteByUsername("deleteUsername");
+        repository.deleteByUsername("deleteUsername");
 
         val resultSecond = jdbcTemplate
                 .queryForList("SELECT id FROM \"user\" WHERE username = 'deleteUsername'");
@@ -224,7 +224,7 @@ public class UserRepositoryTest {
     @Test
     void deleteByUsername_notFound_throwsException() {
         String username = "nonExistent";
-        assertThrows(UserNotFoundException.class, () -> userRepository.deleteByUsername(username));
+        assertThrows(UserNotFoundException.class, () -> repository.deleteByUsername(username));
     }
 
     @Test
@@ -233,7 +233,7 @@ public class UserRepositoryTest {
         jdbcTemplate.update("INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
                 id, "find", "find@example.com", "password", "USER");
 
-        val user = userRepository.findById(id);
+        val user = repository.findById(id);
 
         assertTrue(user.isPresent());
         assertEquals("find", user.get().getUsername());
@@ -245,7 +245,7 @@ public class UserRepositoryTest {
         jdbcTemplate.update("INSERT INTO \"user\" (id, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
                 id, "findByUsername", "findByUsername@example.com", "password", "USER");
 
-        val user = userRepository.findByUsername("findByUsername");
+        val user = repository.findByUsername("findByUsername");
 
         assertTrue(user.isPresent());
         assertEquals("findByUsername@example.com", user.get().getEmail());
@@ -264,7 +264,7 @@ public class UserRepositoryTest {
         int pageSize = 10;
         Pageable pageable = PageRequest.of(0, pageSize);
 
-        Page<UserEntity> all = userRepository.findAll(pageable);
+        Page<UserEntity> all = repository.findAll(pageable);
 
         assertTrue(all.getTotalElements() >= 2);
         assertTrue(all.getContent().size() >= 2);
