@@ -9,9 +9,9 @@ services:
       - app-net
     depends_on:
       localRabbitMQ:
-        condition: service_started
+        condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
       kafka:
         condition: service_healthy
     env_file: leetcode.conf
@@ -26,11 +26,15 @@ services:
       - app-net
     depends_on:
       problem-postgres:
-        condition: service_started
+        condition: service_healthy
       kafka:
         condition: service_healthy
       consul:
         condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=${PROBLEM_SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${PROBLEM_SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${PROBLEM_SPRING_DATASOURCE_PASSWORD}
     env_file: leetcode.conf
     restart: on-failure
 
@@ -47,7 +51,7 @@ services:
       kafka:
         condition: service_healthy
       localRabbitMQ:
-        condition: service_started
+        condition: service_healthy
       consul:
         condition: service_started
     env_file: leetcode.conf
@@ -78,6 +82,11 @@ services:
       - app-net
     env_file: leetcode.conf
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
 
   problem-postgres:
     image: postgres:17
@@ -87,8 +96,17 @@ services:
       - problem_pg_data:/var/lib/postgresql/data
     networks:
       - app-net
+    environment:
+      - POSTGRES_DB=problem_service_db
+      - POSTGRES_USER=elise
+      - POSTGRES_HOST_AUTH_METHOD=trust
     env_file: leetcode.conf
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U elise -d problem_service_db" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
 
   mongodb:
     image: mongo:6.0
@@ -124,6 +142,11 @@ services:
       - app-net
     env_file: leetcode.conf
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
