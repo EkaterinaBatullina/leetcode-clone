@@ -17,4 +17,5 @@ public class OutboxEventEntity {
     private String topic;
     private Status status;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

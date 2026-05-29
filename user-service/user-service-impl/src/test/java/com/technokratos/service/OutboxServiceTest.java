@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,12 +37,13 @@ public class OutboxServiceTest {
     @Test
     void processOutbox() {
         UUID eventId = UUID.randomUUID();
+
         OutboxEventEntity entity = OutboxEventEntity.builder()
                 .id(eventId)
-                .status(Status.NEW)
+                .status(Status.PROCESSING)
                 .build();
 
-        when(repository.findAllNew(50)).thenReturn(List.of(entity));
+        when(repository.pollAndLock(50)).thenReturn(List.of(entity));
 
         doAnswer(invocation -> {
             Runnable onSuccess = invocation.getArgument(1);
@@ -53,30 +53,31 @@ public class OutboxServiceTest {
 
         service.processOutbox();
 
-        verify(repository).findAllNew(50);
+        verify(repository).pollAndLock(50);
         verify(repository).updateStatus(eventId, Status.SENT);
     }
 
     @Test
     void processOutbox_failed() {
         UUID eventId = UUID.randomUUID();
+
         OutboxEventEntity entity = OutboxEventEntity.builder()
                 .id(eventId)
-                .status(Status.NEW)
+                .status(Status.PROCESSING)
                 .build();
 
-        when(repository.findAllNew(50)).thenReturn(List.of(entity));
+        when(repository.pollAndLock(50)).thenReturn(List.of(entity));
 
         doAnswer(invocation -> {
-            Consumer<Exception> onError = invocation.getArgument(2);
+            Consumer<Throwable> onError = invocation.getArgument(2);
             onError.accept(new RuntimeException("Kafka down"));
             return null;
         }).when(producer).publishEvent(any(), any(), any());
 
         service.processOutbox();
 
-        verify(repository).findAllNew(50);
-        verify(repository).updateStatus(eventId, Status.FAILED);
+        verify(repository).pollAndLock(50);
+        verify(repository).updateStatus(eventId, Status.NEW);
     }
 
     @Test
@@ -85,22 +86,21 @@ public class OutboxServiceTest {
         String aggregateId = UUID.randomUUID().toString();
         String type = "user-registered";
 
-        UserRegisteredEvent testEvent = new UserRegisteredEvent(UUID.randomUUID(), UUID.fromString(aggregateId), "testUser", "email@gmail.ru");
-        String expectedPayload = "{\"userId\":\"" + aggregateId + "\"}";
+        UserRegisteredEvent testEvent =
+                new UserRegisteredEvent(UUID.randomUUID(), UUID.fromString(aggregateId), "testUser", "email@gmail.ru");
 
-        when(mapper.writeValueAsString(testEvent)).thenReturn(expectedPayload);
-
-        doNothing().when(repository).save(any(OutboxEventEntity.class));
+        when(mapper.writeValueAsString(testEvent)).thenReturn("json");
 
         service.save(topic, aggregateId, type, testEvent);
 
         verify(mapper).writeValueAsString(testEvent);
+
         verify(repository).save(argThat(entity ->
                 entity.getAggregateId().equals(aggregateId) &&
                         entity.getTopic().equals(topic) &&
                         entity.getType().equals(type) &&
                         entity.getStatus() == Status.NEW &&
-                        entity.getPayload().equals(expectedPayload)
+                        entity.getPayload().equals("json")
         ));
     }
 
@@ -111,12 +111,19 @@ public class OutboxServiceTest {
         String type = "user-registered";
         Object dummyEvent = new Object();
 
-        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        JsonProcessingException jacksonException =
+                new JsonProcessingException("boom") {};
+
+        when(mapper.writeValueAsString(any()))
+                .thenThrow(jacksonException);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 service.save(topic, aggregateId, type, dummyEvent));
 
-        assertTrue(exception.getMessage().contains("Error during outbox event serialization for type: " + type));
+        assertTrue(exception.getMessage()
+                .contains("Error during outbox event serialization for type: " + type));
+
+        assertEquals(jacksonException, exception.getCause());
 
         verify(repository, never()).save(any());
     }

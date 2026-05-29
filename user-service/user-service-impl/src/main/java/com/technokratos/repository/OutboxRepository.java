@@ -10,7 +10,9 @@ public interface OutboxRepository {
 
     void save(OutboxEventEntity entity);
 
-    List<OutboxEventEntity> findAllNew(int limit);
-
     void updateStatus(UUID id, Status status);
+
+    List<OutboxEventEntity> pollAndLock(int limit);
+
+    void resetStuckProcessingEvents();
 }

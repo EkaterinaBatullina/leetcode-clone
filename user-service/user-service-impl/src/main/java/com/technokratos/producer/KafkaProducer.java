@@ -4,6 +4,7 @@ import com.technokratos.model.OutboxEventEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -35,10 +36,15 @@ public class KafkaProducer {
                     log.info("Event sent! Topic: {}, Offset: {}", entity.getTopic(), result.getRecordMetadata().offset());
                     onSuccess.run();
                 }, outboxExecutor)
-                .exceptionally(ex -> {
-                    log.error("Failed to send event {}. Reason: {}", entity.getId(), ex.getMessage());
-                    onFailure.accept(ex.getCause() != null ? ex.getCause() : ex);
+                .exceptionallyAsync(ex -> {
+                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                    if (cause instanceof RejectedExecutionException) {
+                        log.warn("Outbox thread pool is overflowed! Event {} will remain pending for retry.", entity.getId());
+                    } else {
+                        log.error("Permanent failure for event {}. Reason: {}", entity.getId(), cause.getMessage());
+                        onFailure.accept(cause);
+                    }
                     return null;
-                });
+                }, outboxExecutor);
     }
 }

@@ -19,16 +19,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @JdbcTest
 @Import(OutboxRepositoryImpl.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles(profiles = "test")
+@ActiveProfiles("test")
 public class OutboxRepositoryTest {
     @Autowired
     OutboxRepositoryImpl outboxRepository;
+
     @Autowired
     JdbcTemplate jdbcTemplate;
 
     @Test
     void save() {
         UUID eventId = UUID.randomUUID();
+
         OutboxEventEntity entity = OutboxEventEntity.builder()
                 .id(eventId)
                 .aggregateId("agg-1")
@@ -41,53 +43,58 @@ public class OutboxRepositoryTest {
         outboxRepository.save(entity);
 
         Map<String, Object> result = jdbcTemplate.queryForMap(
-                "SELECT id, status, payload FROM outbox_events WHERE id = ?", eventId);
+                "SELECT id, status, payload, topic, aggregate_id FROM outbox_events WHERE id = ?",
+                eventId
+        );
 
         assertEquals(eventId, result.get("id"));
         assertEquals("NEW", result.get("status"));
+        assertEquals("test-topic", result.get("topic"));
+        assertEquals("agg-1", result.get("aggregate_id"));
         assertNotNull(result.get("payload"));
     }
 
     @Test
-    void findAllNew_withLocking() {
+    void pollAndLock_marksAsProcessing_andReturnsEvents() {
         UUID eventId = UUID.randomUUID();
 
-        OutboxEventEntity entity = OutboxEventEntity.builder()
-                .id(eventId)
-                .aggregateId("agg-2")
-                .type("LOCK_TEST")
-                .payload("{}")
-                .topic("topic")
-                .status(Status.NEW)
-                .build();
-        outboxRepository.save(entity);
+        jdbcTemplate.update("""
+                INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status, created_at, updated_at)
+                VALUES (?, 'agg-2', 'LOCK_TEST', '{}', 'topic', 'NEW', now(), now())
+                """, eventId);
 
-        List<OutboxEventEntity> events = outboxRepository.findAllNew(10);
+        List<OutboxEventEntity> events = outboxRepository.pollAndLock(10);
 
         assertFalse(events.isEmpty());
         assertEquals(eventId, events.get(0).getId());
-        assertEquals(Status.NEW, events.get(0).getStatus());
+        assertEquals(Status.PROCESSING, events.get(0).getStatus());
+
+        String status = jdbcTemplate.queryForObject(
+                "SELECT status FROM outbox_events WHERE id = ?",
+                String.class,
+                eventId
+        );
+
+        assertEquals("PROCESSING", status);
     }
 
     @Test
     void updateStatus() {
         UUID eventId = UUID.randomUUID();
 
-        OutboxEventEntity entity = OutboxEventEntity.builder()
-                .id(eventId)
-                .aggregateId("agg-3")
-                .type("UPDATE_TEST")
-                .payload("{}")
-                .topic("topic")
-                .status(Status.NEW)
-                .build();
-        outboxRepository.save(entity);
+        jdbcTemplate.update("""
+                INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status, created_at, updated_at)
+                VALUES (?, 'agg-3', 'UPDATE_TEST', '{}', 'topic', 'NEW', now(), now())
+                """, eventId);
 
         outboxRepository.updateStatus(eventId, Status.SENT);
 
-        String status = jdbcTemplate.queryForObject(
-                "SELECT status FROM outbox_events WHERE id = ?", String.class, eventId);
+        Map<String, Object> result = jdbcTemplate.queryForMap(
+                "SELECT status, updated_at FROM outbox_events WHERE id = ?",
+                eventId
+        );
 
-        assertEquals("SENT", status);
+        assertEquals("SENT", result.get("status"));
+        assertNotNull(result.get("updated_at"));
     }
 }
