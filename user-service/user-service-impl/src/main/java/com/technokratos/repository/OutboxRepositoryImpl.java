@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +13,10 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class OutboxRepositoryImpl implements OutboxRepository {
+    /*
+     * Сохранение события в Outbox в рамках бизнес-транзакции.
+     * Фактическая отправка в Kafka выполняется асинхронно планировщиком.
+     */
     private static final String SQL_INSERT_EVENT = """
         INSERT INTO outbox_events (
             id,
@@ -26,6 +29,10 @@ public class OutboxRepositoryImpl implements OutboxRepository {
         VALUES (?, ?, ?, ?::jsonb, ?, ?)
         """;
 
+    /*
+     * Фиксация результата обработки события.
+     * updated_at используется для восстановления зависших записей.
+     */
     private static final String SQL_UPDATE_STATUS = """
         UPDATE outbox_events
         SET status = ?,
@@ -33,6 +40,11 @@ public class OutboxRepositoryImpl implements OutboxRepository {
         WHERE id = ?
         """;
 
+    /*
+     * Атомарно переводит события из NEW в PROCESSING и возвращает их
+     * для отправки. FOR UPDATE SKIP LOCKED исключает конкурентную
+     * обработку одной записи несколькими инстансами сервиса.
+     */
     private static final String SQL_POLL_AND_LOCK_EVENTS = """
         UPDATE outbox_events
         SET status = 'PROCESSING',
@@ -56,6 +68,12 @@ public class OutboxRepositoryImpl implements OutboxRepository {
             updated_at
         """;
 
+    /*
+     * Возвращает зависшие PROCESSING-события в повторную обработку.
+     *
+     * После нескольких неудачных попыток событие переводится в FAILED
+     * для предотвращения бесконечных циклов переотправки.
+     */
     private static final String SQL_RESET_STUCK_EVENTS = """
         UPDATE outbox_events
         SET status = CASE 

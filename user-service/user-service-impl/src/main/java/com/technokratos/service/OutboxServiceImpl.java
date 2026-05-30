@@ -23,6 +23,13 @@ public class OutboxServiceImpl implements OutboxService {
     private final KafkaProducer producer;
     private final ObjectMapper mapper;
 
+    /*
+     * Забирает пакет NEW-событий, атомарно переводя их в PROCESSING.
+     *
+     * Отправка в Kafka выполняется асинхронно. При успешной публикации
+     * событие помечается как SENT, при ошибке возвращается в NEW
+     * для повторной обработки.
+     */
     @Override
     public void processOutbox() {
         List<OutboxEventEntity> pending = repository.pollAndLock(50);
@@ -44,6 +51,12 @@ public class OutboxServiceImpl implements OutboxService {
         repository.resetStuckProcessingEvents();
     }
 
+    /*
+     * Обновление статуса выполняется в отдельной транзакции.
+     *
+     * Это позволяет зафиксировать результат обработки события
+     * независимо от транзакции планировщика или callback-цепочки.
+     */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateStatus(UUID id, Status status) {

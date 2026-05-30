@@ -19,6 +19,16 @@ public class KafkaProducer {
     private final KafkaTemplate<String, Object> template;
     private final Executor outboxExecutor;
 
+    /*
+     * Универсальный producer для отправки событий из Outbox.
+     *
+     * Конкретный тип события не зашит в коде producer и определяется
+     * содержимым записи OutboxEventEntity (topic, type, payload).
+     *
+     * Такой подход позволяет использовать единую Outbox-таблицу и
+     * один KafkaTemplate для публикации различных доменных событий
+     * без добавления отдельных producer-ов под каждый тип сообщения.
+     */
     public void publishEvent(OutboxEventEntity entity, Runnable onSuccess, Consumer<Throwable> onFailure) {
         ProducerRecord<String, Object> record = new ProducerRecord<>(
                 entity.getTopic(),
@@ -26,11 +36,32 @@ public class KafkaProducer {
                 entity.getPayload()
         );
 
+        /*
+         * Тип события передается через Kafka-заголовок "__TypeId__".
+         *
+         * Consumer использует значение заголовка для сопоставления
+         * сообщения с нужным типом через TypeMappings.
+         *
+         * Такой подход позволяет передавать в payload только данные события,
+         * а логику выбора конкретного класса оставлять на стороне consumer.
+         */
         record.headers().add(
                 "__TypeId__",
                 entity.getType().getBytes(StandardCharsets.UTF_8)
         );
 
+        /*
+         * Callback-и выполняются в отдельном executor, чтобы исключить
+         * выполнение операций с БД в потоках Kafka producer.
+         *
+         * При переполнении очереди задач статус события может не обновиться.
+         * В этом случае событие останется в PROCESSING и позже будет
+         * возвращено в NEW планировщиком восстановления.
+         *
+         * Возможна повторная отправка уже доставленного сообщения.
+         * Это допустимо, поскольку консюмер отслеживает DuplicateKeyException
+         * для идемпотентной обработки событий.
+         */
         template.send(record)
                 .thenAcceptAsync(result -> {
                     log.info("Event sent! Topic: {}, Offset: {}", entity.getTopic(), result.getRecordMetadata().offset());
