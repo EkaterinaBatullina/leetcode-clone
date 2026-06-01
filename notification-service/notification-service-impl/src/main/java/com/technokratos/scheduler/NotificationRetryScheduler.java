@@ -18,6 +18,13 @@ public class NotificationRetryScheduler {
     private final NotificationRepository repository;
     private final NotificationServiceImpl notificationService;
 
+    /*
+     * Дополнительный уровень восстановления поверх Kafka retry-механизма.
+     *
+     * После успешного чтения сообщения из Kafka уведомление уже сохранено
+     * в MongoDB, поэтому дальнейшие ошибки доставки обрабатываются
+     * отдельным планировщиком через повторную отправку записей со статусом FAIL.
+     */
     @Scheduled(fixedDelay = 60000)
     public void processFailedNotifications() {
         log.debug("Scheduler started: scanning MongoDB for failed notifications...");

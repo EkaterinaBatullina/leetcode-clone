@@ -1,6 +1,7 @@
 package com.technokratos.kafka;
 
 import com.technokratos.event.UserRegisteredEvent;
+import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.service.NotificationServiceImpl;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -29,6 +30,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -92,7 +94,9 @@ public class KafkaConsumerRetryTest {
                 new DefaultKafkaConsumerFactory<>(consumerProps, new StringDeserializer(),
                         new JsonDeserializer<>(UserRegisteredEvent.class));
 
-        doThrow(new RuntimeException("service exception")).when(service).saveUserRegisteredEvent(event);
+        doThrow(new RuntimeException("service exception"))
+                .when(service)
+                .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
 
         kafkaTemplate.send("user-registered-event", expectedUserId.toString(), event);
 
@@ -111,8 +115,84 @@ public class KafkaConsumerRetryTest {
                             assertEquals(expectedUserId, record.value().userId());
                             assertEquals(expectedEmail, record.value().email());
 
+                            /*
+                             * После исчерпания retry-попыток сообщение должно
+                             * оказаться в DLT.
+                             *
+                             * Дополнительно проверяем количество вызовов сервиса,
+                             * подтверждая работу механизма повторной доставки.
+                             */
                             verify(service, times(3)).saveUserRegisteredEvent(event);
                     });
+        }
+    }
+
+    @Test
+    void consumeUserRegisteredEvent_duplicateEvent_shouldNotGoToDlt() {
+        UUID expectedUserId = UUID.randomUUID();
+
+        UserRegisteredEvent event = new UserRegisteredEvent(
+                UUID.randomUUID(),
+                expectedUserId,
+                "testUsername",
+                "test@gmail.com"
+        );
+
+        doThrow(new DuplicateEventException("duplicate event"))
+                .when(service)
+                .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
+
+        Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
+                "duplicate-test-group",
+                "false",
+                embeddedKafka
+        );
+
+        consumerProps.put(
+                JsonDeserializer.TRUSTED_PACKAGES,
+                "com.technokratos"
+        );
+
+        DefaultKafkaConsumerFactory<String, UserRegisteredEvent> consumerFactory =
+                new DefaultKafkaConsumerFactory<>(
+                        consumerProps,
+                        new StringDeserializer(),
+                        new JsonDeserializer<>(UserRegisteredEvent.class)
+                );
+
+        kafkaTemplate.send(
+                "user-registered-event",
+                expectedUserId.toString(),
+                event
+        );
+
+        try (Consumer<String, UserRegisteredEvent> consumer =
+                     consumerFactory.createConsumer()) {
+
+            embeddedKafka.consumeFromAnEmbeddedTopic(
+                    consumer,
+                    "user-registered-event-dlt"
+            );
+
+            Awaitility.await()
+                    .atMost(Duration.ofSeconds(10))
+                    .untilAsserted(() -> {
+
+                        verify(service, times(1))
+                                .saveUserRegisteredEvent(any());
+
+                        verify(service, never())
+                                .sendWelcomeNotification(any());
+                    });
+
+            assertThrows(
+                    IllegalStateException.class,
+                    () -> KafkaTestUtils.getSingleRecord(
+                            consumer,
+                            "user-registered-event-dlt",
+                            Duration.ofMillis(500)
+                    )
+            );
         }
     }
 }

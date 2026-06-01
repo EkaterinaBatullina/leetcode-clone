@@ -57,6 +57,13 @@ public class KafkaConsumerSuccessTest {
     @Autowired
     KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
 
+    /*
+     * Проверяется полный сценарий обработки события:
+     * публикация в Kafka -> обработка listener -> сохранение в MongoDB.
+     *
+     * Тест использует EmbeddedKafka и Testcontainers,
+     * максимально приближен к реальному окружению.
+     */
     @Test
     void consumeUserRegisteredEvent_success() {
         UUID expectedUserId = UUID.randomUUID();
@@ -76,7 +83,6 @@ public class KafkaConsumerSuccessTest {
                 .pollInterval(Duration.ofMillis(200))
                 .untilAsserted(() -> {
                     Page<Notification> notificationPage = repository.findByUserId(expectedUserId, pageable);
-                    assertNotNull( notificationPage);
                     assertFalse(notificationPage.getContent().isEmpty());
                     assertEquals(1, notificationPage.getContent().size());
                     assertEquals(expectedUserId, notificationPage.getContent().get(0).getUserId());

@@ -20,6 +20,12 @@ import org.springframework.stereotype.Service;
 public class KafkaConsumer {
     private final NotificationService service;
 
+    /*
+     * Ошибки обработки не приводят к немедленной потере сообщения.
+     *
+     * Spring Kafka перенаправляет событие через retry-топики,
+     * а после исчерпания попыток помещает его в DLT.
+     */
     @RetryableTopic(
             kafkaTemplate = "kafkaTemplate",
             backoff = @Backoff(delay = 10, multiplier = 1, maxDelay = 50)
@@ -34,12 +40,25 @@ public class KafkaConsumer {
                     event.userId(),
                     event.email());
             ack.acknowledge();
+
+        /*
+         * Повторная доставка сообщения ожидаема для at-least-once модели.
+         *
+         * Дубликаты определяются по eventId и не приводят
+         * к повторному выполнению бизнес-операции.
+         */
         } catch (DuplicateEventException e) {
             log.info("Skipping duplicate notification for event: {}", event.eventId());
             ack.acknowledge();
         }
     }
 
+    /*
+     * Сообщения попадают в DLT после исчерпания всех retry-попыток.
+     *
+     * DLT позволяет сохранить проблемное событие для последующего
+     * анализа без остановки основного потока обработки.
+     */
     @KafkaListener(
             topics = "${spring.kafka.topic.user-registered}-dlt",
             groupId = "notification-dlt-group",

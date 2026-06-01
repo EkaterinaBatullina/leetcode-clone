@@ -29,6 +29,13 @@ public class KafkaConsumerConfig {
         consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getValueDeserializer());
         consumerConfig.put(JsonDeserializer.TRUSTED_PACKAGES, kafkaProperties.getTrustedPackages());
 
+        /*
+         * Сопоставление значения Kafka-заголовка "__TypeId__"
+         * с конкретным Java-классом события.
+         *
+         * Позволяет использовать единый consumer для разных типов сообщений
+         * без передачи полного имени класса в payload.
+         */
         consumerConfig.put(JsonDeserializer.TYPE_MAPPINGS, kafkaProperties.getTypeMappings());
 
         consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getGroupId());
@@ -53,6 +60,14 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+
+        /*
+         * Подтверждение сообщения выполняется вручную.
+         *
+         * Offset фиксируется только после успешной обработки события,
+         * что позволяет повторно получить сообщение при ошибке
+         * до момента acknowledge().
+         */
         factory.getContainerProperties()
                 .setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
