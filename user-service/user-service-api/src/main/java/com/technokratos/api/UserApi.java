@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
@@ -87,7 +87,7 @@ public interface UserApi {
     @Operation(
             summary = "Update current user",
             description = "Updates the profile of the authenticated user.",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "User data to update",
                     required = true,
                     content = @Content(
@@ -122,7 +122,7 @@ public interface UserApi {
     @Operation(
             summary = "Update current user partially",
             description = "Updates only the provided fields of the authenticated user.",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Partial user data to update",
                     required = true,
                     content = @Content(schema = @Schema(implementation = UserPartialRequest.class))
@@ -144,7 +144,7 @@ public interface UserApi {
     @Operation(
             summary = "Update user role",
             description = "Updates the role of a user with the given ID. Only accessible by ADMIN.",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Role to assign",
                     required = true,
                     content = @Content(schema = @Schema(implementation = RoleRequest.class))

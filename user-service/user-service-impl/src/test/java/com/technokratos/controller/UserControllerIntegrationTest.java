@@ -32,20 +32,34 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * Поднимаем приложение на случайном порту,
+ * чтобы избежать конфликтов между тестовыми
+ * запусками и параллельными сборками.
+ */
 @SpringBootTest(classes = TestRestTemplateConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(profiles = "test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class UserControllerIntegrationTest {
+    /*
+     * Тестирование выполняется через HTTP-клиент,
+     * а не прямой вызов контроллера.
+     *
+     * Это позволяет проверить весь web-слой:
+     * security filters, serialization,
+     * validation и exception handlers.
+     */
     @Autowired
     TestRestTemplate testRestTemplate;
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
     @Autowired
     JwtDecoder decoder;
+    @Autowired
+    OAuth2ClientProperties properties;
     String userAccessToken;
     String userForDeletionAccessToken;
     String accessAdminToken;
-    OAuth2ClientProperties properties;
 
     @BeforeAll
     void initToken() {
@@ -138,6 +152,14 @@ public class UserControllerIntegrationTest {
         assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(204)));
         UUID userId =  UUID.fromString(decoder.decode(userAccessToken).getSubject());
         assertNotNull(userId);
+
+        /*
+         * Проверяем фактическое состояние БД,
+         * а не только HTTP-статус ответа.
+         *
+         * Это подтверждает успешное выполнение
+         * бизнес-операции на уровне persistence слоя.
+         */
         jdbcTemplate.query(
                 "SELECT * FROM \"user\" WHERE id = :p_id",
                 new MapSqlParameterSource("p_id", userId),
@@ -201,7 +223,7 @@ public class UserControllerIntegrationTest {
                 Void.class
         );
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(403)));
+        assertEquals(HttpStatusCode.valueOf(403), response.getStatusCode());
     }
 
     @Test

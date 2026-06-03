@@ -75,6 +75,11 @@ public class BasicAuthFilter extends OncePerRequestFilter {
 
     private void reject(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write(message);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        response.getWriter().write(
+                "{\"error\":\"" + message + "\"}"
+        );
     }
 }
