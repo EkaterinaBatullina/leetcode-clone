@@ -13,8 +13,6 @@ import org.springframework.http.*;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Objects;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = TestRestTemplateConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -73,22 +71,15 @@ class AuthenticationControllerIntegrationTest {
     void refresh() {
         registerUser("username-refresh","refresh@gmail.com","securePassword123");
 
-        TokenCoupleResponse tokens = Objects
-                .requireNonNull(loginUser("username-refresh","securePassword123").getBody());
+        TokenCoupleResponse tokens = loginUser("username-refresh", "securePassword123").getBody();
+        assertNotNull(tokens);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(tokens.accessToken());
 
         ResponseEntity<TokenCoupleResponse> response =
-                testRestTemplate.exchange(
-                        "/api/v1/authentication/token/refresh",
-                        HttpMethod.POST,
-                        new HttpEntity<>(
-                                new RefreshTokenRequest(
-                                        tokens.refreshToken()
-                                ),
-                                headers
-                        ),
+                testRestTemplate.exchange("/api/v1/authentication/token/refresh", HttpMethod.POST,
+                        new HttpEntity<>(new RefreshTokenRequest(tokens.refreshToken()), headers),
                         TokenCoupleResponse.class
                 );
 
@@ -112,18 +103,15 @@ class AuthenticationControllerIntegrationTest {
     }
 
     private ResponseEntity<TokenCoupleResponse> registerUser(String username, String email, String password) {
-        return testRestTemplate.exchange("/api/v1/authentication/register",
-                HttpMethod.POST, new HttpEntity<>(new UserFullRequest(username, email, password),
-                        createBasicAuthHeaders()
-                ), TokenCoupleResponse.class
+        return testRestTemplate.exchange("/api/v1/authentication/register", HttpMethod.POST,
+                new HttpEntity<>(new UserFullRequest(username, email, password), createBasicAuthHeaders()),
+                TokenCoupleResponse.class
         );
     }
 
     private ResponseEntity<TokenCoupleResponse> loginUser(String username, String password) {
-        return testRestTemplate.exchange("/api/v1/authentication/login",
-                HttpMethod.POST, new HttpEntity<>(new AuthenticationRequest(username, password),
-                        createBasicAuthHeaders()
-                ),
+        return testRestTemplate.exchange("/api/v1/authentication/login", HttpMethod.POST,
+                new HttpEntity<>(new AuthenticationRequest(username, password), createBasicAuthHeaders()),
                 TokenCoupleResponse.class
         );
     }
