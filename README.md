@@ -7,6 +7,7 @@
 - **Notification Service** - асинхронная обработка событий через Kafka, отправка email-уведомлений
 - **Инфраструктура сообщений** - интеграция Kafka и RabbitMQ, реализация паттерна Transactional Outbox
 - **Logging Starter** - AOP-логирование для Controller / Service / Repository слоёв
+- **CI/CD** - конфигурация пайплайнов, скрипты автоматического деплоя и настройки Nginx вынесены в отдельный репозиторий: [infrastructure на GitLab](https://gitlab.com/EkaterinaBatullina/infrastructure).
 
 Проект представляет собой микросервисную платформу для решения алгоритмических задач (аналог LeetCode).
 
