@@ -3,8 +3,8 @@
 **Тип проекта:** Командная разработка (2 человека)
 
 **Отвечала за реализацию:**
-- **User Service** - аутентификация (JWT RSA-256), Google OAuth2, управление профилем пользователя и статистикой
-- **Notification Service** - асинхронная обработка событий через Kafka, отправка email-уведомлений
+- **User Service** - аутентификация (JWT RSA-256), [Google OAuth2](docs/google-auth-integration.md), управление профилем пользователя и статистикой
+- **Notification Service** - асинхронная обработка событий через Kafka, [отправка email-уведомлений](docs/email-notification-service.md)
 - **Инфраструктура сообщений** - интеграция Kafka и RabbitMQ, реализация паттерна Transactional Outbox
 - **Logging Starter** - AOP-логирование для Controller / Service / Repository слоёв
 - **CI/CD** - конфигурация пайплайнов, скрипты автоматического деплоя и настройки Nginx вынесены в отдельный репозиторий: [infrastructure на GitLab](https://gitlab.com/EkaterinaBatullina/infrastructure).
@@ -23,7 +23,7 @@
 ### User Service
 Сервис управления пользователями и их данными.
 
-- Аутентификация JWT (RSA-256) с поддержкой [Google OAuth2](docs/google-auth-integration.md) *(detailed flow)*
+- Аутентификация JWT (RSA-256) с поддержкой Google OAuth2
 - Хранение профилей в PostgreSQL
 - Публикация событий регистрации в Kafka и обработка обновлений статистики из RabbitMQ
 - Поддержка пользовательской статистики (решения, активность)
@@ -50,7 +50,7 @@
 ---
 
 ### Notification Service
-[Сервис доставки уведомлений](docs/email-notification-service.md) *(detailed flow)*
+Сервис доставки уведомлений
 
 - MongoDB для хранения истории уведомлений
 - Асинхронная обработка событий из Kafka
