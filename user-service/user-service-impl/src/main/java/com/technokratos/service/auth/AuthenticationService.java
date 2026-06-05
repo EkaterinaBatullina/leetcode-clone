@@ -4,7 +4,6 @@ import com.nimbusds.jose.util.Pair;
 import com.technokratos.dto.request.AuthenticationRequest;
 import com.technokratos.dto.response.TokenCoupleResponse;
 import com.technokratos.model.UserEntity;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;

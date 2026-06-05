@@ -58,6 +58,13 @@ public class JwtConfig {
         return NimbusJwtDecoder.withPublicKey(rsaPublicKey).build();
     }
 
+    /*
+     * Инжектится в JWT Authentication Filter Resource Server.
+     *
+     * Конвертирует claim "authorities" в GrantedAuthority объекты,
+     * которые затем помещаются в SecurityContext и используются
+     * механизмами авторизации (hasRole(), @PreAuthorize()).
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

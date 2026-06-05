@@ -47,7 +47,11 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder, JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtDecoder jwtDecoder,
+            JwtAuthenticationConverter jwtAuthenticationConverter
+    ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -55,7 +59,27 @@ public class WebSecurityConfig {
                         .requestMatchers(PERMIT_ALL).permitAll()
                         .anyRequest().authenticated()
                 )
+
+                /*
+                 * Встраивание кастомного BasicAuthFilter в цепочку Spring Security
+                 * перед UsernamePasswordAuthenticationFilter.
+                 *
+                 * Используется для аутентификации клиентского приложения
+                 * на эндпоинтах логина и регистрации (client credentials, Basic Auth),
+                 * в дополнение к основной JWT-аутентификации.
+                 */
                 .addFilterBefore(new BasicAuthFilter(properties), UsernamePasswordAuthenticationFilter.class)
+
+                /*
+                 * Конфигурация OAuth2 Resource Server для обработки JWT (Bearer tokens).
+                 *
+                 * Используются кастомные компоненты:
+                 * - JwtDecoder: валидация и проверка токена
+                 * - JwtAuthenticationConverter: маппинг claims в authorities
+                 *
+                 * Позволяет адаптировать стандартный Spring Security JWT flow
+                 * под доменную модель ролей и прав.
+                 */
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder)
