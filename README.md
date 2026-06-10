@@ -1,4 +1,4 @@
-# LeetCode Clone (Microservices Architecture) (2025 - 2026 гг.)
+# LeetCode Clone (Microservices Architecture)
 
 **Тип проекта:** Командная разработка (2 человека)
 
@@ -18,9 +18,7 @@
 
 ---
 
-## Core Services
-
-### User Service
+## User Service
 Сервис управления пользователями и их данными.
 
 - Аутентификация JWT (RSA-256) с поддержкой Google OAuth2
@@ -30,7 +28,20 @@
 
 ---
 
-### Problem Service
+## Пример запроса на /login/google:
+Обмен Google ID Token на access и refresh токены User Service
+
+![](docs/screenshot/google-auth-screenshot/step12.jpeg)
+
+---
+
+## Подробнее по интеграции Google OAuth2:
+
+[google-auth-integration.md](docs/google-auth-integration.md) - 13 шагов + скриншоты (backend flow + обмен токенов + валидация + JWT + декодирование Google-token)
+
+---
+
+## Problem Service
 Сервис хранения и управления задачами.
 
 - PostgreSQL как основное хранилище
@@ -39,22 +50,34 @@
 
 ---
 
-### Submission Service
+## Submission Service
 Основной вычислительный сервис системы.
 
-- Принимает решения пользователей
-- Асинхронная обработка через RabbitMQ
-- Интеграция с Judge0 (self-hosted execution engine)
-- Обработка очередей и результатов выполнения
+- Принимает и обрабатывает пользовательские решения
+- Асинхронная обработка и интеграция через RabbitMQ
+- Взаимодействие с Judge0 (локальный инстанс / RapidAPI) для выполнения кода
+- Получение результатов через callback и обновление статусов выполнения
 
 ---
 
-### Notification Service
+## Notification Service
 Сервис доставки уведомлений
 
 - MongoDB для хранения истории уведомлений
 - Асинхронная обработка событий из Kafka
 - Синхронная отправка Email-уведомлений
+
+---
+
+## Получение письма после регистрации:
+
+![](docs/screenshot/email-notification-screenshot/step5.png)
+
+---
+
+## Подробнее по работе Notification Service:
+
+[email-notification-service.md](docs/email-notification-service.md) - 8 шагов реализации + скриншоты (регистрация пользователя → Kafka event → обработка события → отправка email → сохранение в MongoDB → получение уведомлений через API)
 
 ---
 
