@@ -41,12 +41,24 @@
 
 ---
 
+## Тестовое покрытие:
+
+![](docs/screenshot/test-coverage-screenshot/user-service-test.png)
+
+---
+
 ## Problem Service
 Сервис хранения и управления задачами.
 
 - PostgreSQL как основное хранилище
 - Асинхронное взаимодействие между сервисами через Kafka
 - Поддержка фильтрации и поиска задач
+
+---
+
+## Тестовое покрытие:
+
+![](docs/screenshot/test-coverage-screenshot/problem-service-test.png)
 
 ---
 
@@ -57,6 +69,12 @@
 - Асинхронная обработка и интеграция через RabbitMQ
 - Взаимодействие с Judge0 (локальный инстанс / RapidAPI) для выполнения кода
 - Получение результатов через callback и обновление статусов выполнения
+
+---
+
+## Тестовое покрытие:
+
+![](docs/screenshot/test-coverage-screenshot/submission-service-test.png)
 
 ---
 
@@ -78,6 +96,12 @@
 ## Подробнее по работе Notification Service:
 
 [email-notification-service.md](docs/email-notification-service.md) - 8 шагов реализации + скриншоты (регистрация пользователя → Kafka event → обработка события → отправка email → сохранение в MongoDB → получение уведомлений через API)
+
+---
+
+## Тестовое покрытие:
+
+![](docs/screenshot/test-coverage-screenshot/notification-service-test.png)
 
 ---
 

@@ -2,6 +2,7 @@ package com.technokratos.repository;
 
 import com.technokratos.dto.enums.Status;
 import com.technokratos.model.OutboxEventEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -27,6 +28,11 @@ public class OutboxRepositoryTest {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void cleanDatabase() {
+        jdbcTemplate.update("DELETE FROM outbox_events");
+    }
 
     @Test
     void save() {
@@ -62,13 +68,14 @@ public class OutboxRepositoryTest {
         UUID eventId = UUID.randomUUID();
 
         jdbcTemplate.update("""
-                INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status, attempts, created_at, updated_at)
-                VALUES (?, 'agg-2', 'LOCK_TEST', '{}', 'topic', 'NEW', 0, now(), now())
-                """, eventId);
+            INSERT INTO outbox_events (id, aggregate_id, type, payload, topic, status, attempts, created_at, updated_at)
+            VALUES (?, 'agg-2', 'LOCK_TEST', '{}', 'topic', 'NEW', 0, now() - INTERVAL '1 hour', now() - INTERVAL '1 hour')
+            """, eventId);
 
         List<OutboxEventEntity> events = repository.pollAndLock(10);
 
-        assertFalse(events.isEmpty());
+        assertFalse(events.isEmpty(), "Список событий пуст!");
+
         assertEquals(eventId, events.get(0).getId());
         assertEquals(Status.PROCESSING, events.get(0).getStatus());
 
