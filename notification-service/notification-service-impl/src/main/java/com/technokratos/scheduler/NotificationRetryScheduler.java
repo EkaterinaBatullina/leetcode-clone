@@ -6,6 +6,7 @@ import com.technokratos.repository.NotificationRepository;
 import com.technokratos.service.NotificationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "app.scheduling.enabled", matchIfMissing = true) // Будет работать везде по умолчанию
 public class NotificationRetryScheduler {
     private final NotificationRepository repository;
     private final NotificationServiceImpl notificationService;

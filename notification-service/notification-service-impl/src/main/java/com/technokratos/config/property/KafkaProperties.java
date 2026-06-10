@@ -20,4 +20,5 @@ public class KafkaProperties {
     private String trustedPackages;
     private boolean enableAutoCommit;
     private String typeMappings;
+    private boolean listenerAutoStartup;
 }

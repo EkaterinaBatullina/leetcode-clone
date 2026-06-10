@@ -12,6 +12,7 @@ import com.technokratos.dto.response.StatisticResponse;
 import com.technokratos.dto.response.UserResponse;
 import lombok.val;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.util.Set;
 import java.util.UUID;
@@ -35,19 +38,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * чтобы избежать конфликтов между тестовыми
  * запусками и параллельными сборками.
  */
-@SpringBootTest(classes = TestRestTemplateConfig.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles(profiles = "test")
+@SpringBootTest(
+        classes = TestRestTemplateConfig.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(com.technokratos.config.TestClientConfig.class)
-public class UserControllerIntegrationTest {
-    /*
-     * Тестирование выполняется через HTTP-клиент,
-     * а не прямой вызов контроллера.
-     *
-     * Это позволяет проверить весь web-слой:
-     * security filters, serialization,
-     * validation и exception handlers.
-     */
+class UserControllerIntegrationTest {
     @Autowired
     TestRestTemplate testRestTemplate;
     @Autowired
@@ -55,97 +53,123 @@ public class UserControllerIntegrationTest {
     @Autowired
     JwtDecoder decoder;
     @Autowired
-    OAuth2ClientProperties properties;
-    @Autowired
     TestAuthClient authClient;
     @Autowired
     TestUserClient userClient;
-    String userToken;
-    String adminToken;
 
-    @BeforeAll
-    void init() {
-        userToken = authClient.register("username7", "email7@gmail.com", "securePassword123");
-        authClient.register("username10", "email10@gmail.com", "securePassword123");
+    private String userToken;
+    private String adminToken;
+
+    @BeforeEach
+    void setUp() {
+        cleanDb();
+
+        userToken = authClient.register(
+                "username7",
+                "email7@gmail.com",
+                "securePassword123"
+        );
+
+        authClient.register(
+                "username10",
+                "email10@gmail.com",
+                "securePassword123"
+        );
+
         adminToken = authClient.loginAsAdmin();
+    }
+
+    private void cleanDb() {
+        jdbcTemplate.getJdbcTemplate().execute(
+                "DELETE FROM \"user\" WHERE username != 'adminUser'"
+        );
     }
 
     @Test
     void getMe() {
-        ResponseEntity<UserResponse> response = userClient.getMe(userToken);
+        ResponseEntity<UserResponse> response =
+                userClient.getMe(userToken);
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(200)));
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(decoder.decode(userToken).getSubject(), response.getBody().uuid().toString());
+
+        assertEquals(
+                decoder.decode(userToken).getSubject(),
+                response.getBody().uuid().toString()
+        );
     }
 
     @Test
     void getStatistic() {
-        ResponseEntity<StatisticResponse> response = userClient.getStatistic(userToken);
+        ResponseEntity<StatisticResponse> response =
+                userClient.getStatistic(userToken);
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(200)));
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(decoder.decode(userToken).getSubject(), response.getBody().userId().toString());
+
+        assertEquals(
+                decoder.decode(userToken).getSubject(),
+                response.getBody().userId().toString()
+        );
     }
 
     @Test
     void getByUsername() {
         ResponseEntity<UserResponse> response =
-                userClient.getByUsername("username8", userToken);
+                userClient.getByUsername("username7", userToken);
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(200)));
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals("username8", response.getBody().username());
+        assertEquals("username7", response.getBody().username());
     }
 
     @Test
     void getAllForUser() {
-        ResponseEntity<CustomPageImpl<UserResponse>> userResponse =
+        ResponseEntity<CustomPageImpl<UserResponse>> response =
                 userClient.getAll(userToken);
 
-        assertTrue(userResponse.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(403)));
+        assertEquals(403, response.getStatusCode().value());
     }
 
     @Test
     void getAllForAdmin() {
-        ResponseEntity<CustomPageImpl<UserResponse>> adminResponse =
+        ResponseEntity<CustomPageImpl<UserResponse>> response =
                 userClient.getAll(adminToken);
 
-        assertTrue(adminResponse.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(200)));
-        assertNotNull(adminResponse.getBody());
-        assertFalse(adminResponse.getBody().isEmpty());
+        assertEquals(200, response.getStatusCode().value());
 
-        CustomPageImpl<UserResponse> users = adminResponse.getBody();
+        CustomPageImpl<UserResponse> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isEmpty());
 
-        Set<String> usernames = users.getContent().stream()
+        Set<String> usernames = body.getContent().stream()
                 .map(UserResponse::username)
                 .collect(Collectors.toSet());
 
-        assertEquals(Set.of("username7", "username10", "adminUser"), usernames);
+        assertEquals(
+                Set.of("username7", "username10", "adminUser"),
+                usernames
+        );
     }
 
     @Test
     void updateMe() {
         ResponseEntity<Void> response = userClient.updateMe(
                 userToken,
-                new UserFullRequest("username8", "email7@gmail.com","securePassword123")
+                new UserFullRequest(
+                        "username8",
+                        "email7@gmail.com",
+                        "securePassword123"
+                )
         );
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(204)));
+        assertEquals(204, response.getStatusCode().value());
 
         UUID userId = UUID.fromString(decoder.decode(userToken).getSubject());
-        assertNotNull(userId);
 
-        /*
-         * Проверяем фактическое состояние БД,
-         * а не только HTTP-статус ответа.
-         *
-         * Это подтверждает успешное выполнение
-         * бизнес-операции на уровне persistence слоя.
-         */
         jdbcTemplate.query(
-                "SELECT * FROM \"user\" WHERE id = :p_id",
-                new MapSqlParameterSource("p_id", userId),
+                "SELECT * FROM \"user\" WHERE id = :id",
+                new MapSqlParameterSource("id", userId),
                 rs -> {
                     assertEquals("username8", rs.getString("username"));
                     assertEquals("email7@gmail.com", rs.getString("email"));
@@ -155,11 +179,15 @@ public class UserControllerIntegrationTest {
 
     @Test
     void delete() {
-        String token = authClient.register("username11", "email11@gmail.com","securePassword123");
+        String token = authClient.register(
+                "username11",
+                "email11@gmail.com",
+                "securePassword123"
+        );
 
         ResponseEntity<Void> response = userClient.deleteMe(token);
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(204)));
+        assertEquals(204, response.getStatusCode().value());
 
         val users = jdbcTemplate.query(
                 "SELECT * FROM \"user\" WHERE username = :username",
@@ -174,17 +202,16 @@ public class UserControllerIntegrationTest {
     void patch() {
         ResponseEntity<Void> response = userClient.patchMe(
                 userToken,
-                new UserPartialRequest("username9", null,null)
+                new UserPartialRequest("username9", null, null)
         );
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(204)));
+        assertEquals(204, response.getStatusCode().value());
 
         UUID userId = UUID.fromString(decoder.decode(userToken).getSubject());
-        assertNotNull(userId);
 
         jdbcTemplate.query(
-                "SELECT * FROM \"user\" WHERE id = :p_id",
-                new MapSqlParameterSource("p_id", userId),
+                "SELECT * FROM \"user\" WHERE id = :id",
+                new MapSqlParameterSource("id", userId),
                 rs -> {
                     assertEquals("username9", rs.getString("username"));
                     assertEquals("email7@gmail.com", rs.getString("email"));
@@ -201,9 +228,12 @@ public class UserControllerIntegrationTest {
         );
 
         ResponseEntity<Void> response = userClient.updateRole(
-                userToken, userId.toString(), new RoleRequest("ADMIN"));
+                userToken,
+                userId.toString(),
+                new RoleRequest("ADMIN")
+        );
 
-        assertEquals(HttpStatusCode.valueOf(403), response.getStatusCode());
+        assertEquals(403, response.getStatusCode().value());
     }
 
     @Test
@@ -220,7 +250,7 @@ public class UserControllerIntegrationTest {
                 new RoleRequest("ADMIN")
         );
 
-        assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(204)));
+        assertEquals(204, response.getStatusCode().value());
 
         jdbcTemplate.query(
                 "SELECT * FROM \"user\" WHERE username = :username",

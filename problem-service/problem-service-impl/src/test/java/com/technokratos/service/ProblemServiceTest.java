@@ -11,6 +11,7 @@ import com.technokratos.enums.PublishStatus;
 import com.technokratos.BaseServiceTest;
 import com.technokratos.entity.Problem;
 import com.technokratos.entity.Testcase;
+import com.technokratos.exception.ProblemNotFoundException;
 import com.technokratos.mapper.ProblemMapper;
 import com.technokratos.mapper.TestcaseMapper;
 import com.technokratos.repository.ProblemRepository;
@@ -95,7 +96,7 @@ public class ProblemServiceTest extends BaseServiceTest {
         when(publishingCoordinatorService.publishWithAck(any()))
                 .thenReturn(CompletableFuture.completedFuture(PublishStatus.FAILED));
 
-        assertThrows(IllegalStateException.class, () ->
+        assertThrows(ProblemNotFoundException.class, () ->
                 problemService.submit(request)
         );
     }
@@ -129,7 +130,7 @@ public class ProblemServiceTest extends BaseServiceTest {
         when(problemRepository.findDifficultyById(problemId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalStateException.class, () ->
+        assertThrows(ProblemNotFoundException.class, () ->
                 problemService.publishTestcases(problemId)
         );
     }

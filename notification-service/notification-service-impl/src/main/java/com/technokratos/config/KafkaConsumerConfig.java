@@ -3,6 +3,7 @@ package com.technokratos.config;
 import com.technokratos.config.property.KafkaProperties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -48,8 +49,10 @@ public class KafkaConsumerConfig {
         DefaultKafkaConsumerFactory<String, Object> factory =
                 new DefaultKafkaConsumerFactory<>(consumerConfig());
 
+        JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>();
+
         ErrorHandlingDeserializer<Object> errorHandlingDeserializer =
-                new ErrorHandlingDeserializer<>(new JsonDeserializer<>());
+                new ErrorHandlingDeserializer<>(jsonDeserializer);
 
         factory.setValueDeserializer(errorHandlingDeserializer);
         return factory;
@@ -60,6 +63,8 @@ public class KafkaConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+
+        factory.setAutoStartup(kafkaProperties.isListenerAutoStartup());
 
         /*
          * Подтверждение сообщения выполняется вручную.

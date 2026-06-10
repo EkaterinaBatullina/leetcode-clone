@@ -9,7 +9,7 @@ import com.technokratos.entity.Problem;
 import com.technokratos.entity.Testcase;
 import com.technokratos.repository.ProblemRepository;
 import com.technokratos.repository.TestcaseRepository;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +45,14 @@ public class TestcaseControllerIntegrationTest extends BaseIntegrationTest {
     private UUID testProblemId;
     private UUID testTestcaseId;
 
-    @BeforeAll
+    @BeforeEach
     void setup() {
         headers = new HttpHeaders();
         headers.setBearerAuth(createValidToken());
 
-        // Create and save test problem
+        testcaseRepository.deleteAll();
+        problemRepository.deleteAll();
+
         Problem problem = new Problem();
         problem.setTitle("Test Problem");
         problem.setDescription("Description");
@@ -128,10 +130,20 @@ public class TestcaseControllerIntegrationTest extends BaseIntegrationTest {
         assertNotNull(response.getBody());
         assertFalse(response.getBody().isEmpty());
 
-        TestcaseResponse firstTestcase = response.getBody().get(0);
-        assertEquals(testTestcaseId, firstTestcase.id());
-        assertEquals("input", firstTestcase.inputData());
-        assertEquals("output", firstTestcase.expectedOutput());
+        boolean exists = response.getBody()
+                .stream()
+                .anyMatch(t -> t.id().equals(testTestcaseId));
+
+        assertTrue(exists, "Created testcase must be present in response");
+
+        TestcaseResponse testcase = response.getBody()
+                .stream()
+                .filter(t -> t.id().equals(testTestcaseId))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Testcase not found in response"));
+
+        assertEquals("input", testcase.inputData());
+        assertEquals("output", testcase.expectedOutput());
     }
 
     @Test

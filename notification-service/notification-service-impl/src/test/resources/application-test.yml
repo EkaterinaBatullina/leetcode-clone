@@ -1,19 +1,31 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
+
   kafka:
+    type-mappings: "user-registered-event:com.technokratos.event.UserRegisteredEvent"
+
+    properties:
+      spring.json.value.default.type: com.technokratos.event.UserRegisteredEvent
+      spring.json.trusted.packages: com.technokratos
+
+    listener:
+      auto-startup: true
+      ack-mode: batch
     consumer:
-      group-id: notification-service-test-group
       auto-offset-reset: earliest
-      enable-auto-commit: false
-
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: com.technokratos
-        spring.json.value.default.type: com.technokratos.event.UserRegisteredEvent
-
+      group-id: notification-service-test
+      enable-auto-commit: true
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+      client-id: notification-service-test-client
     topic:
       user-registered: user-registered-event
+
+mail:
+  username: test
+  password: test
+
+management:
+  health:
+    mail:
+      enabled: false

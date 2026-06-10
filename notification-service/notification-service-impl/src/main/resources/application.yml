@@ -11,6 +11,8 @@ spring:
     trusted-packages: com.technokratos
     default-type: com.technokratos.event.UserRegisteredEvent
     client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID}
+    listener:
+      auto-startup:true
     topic:
       user-registered: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
     type-mappings: ${KAFKA_TYPE_MAPPINGS}
