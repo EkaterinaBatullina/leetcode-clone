@@ -3,7 +3,7 @@ package com.technokratos.integration.controller;
 import com.technokratos.dto.CustomPageImpl;
 import com.technokratos.dto.enums.Status;
 import com.technokratos.dto.response.NotificationResponse;
-import com.technokratos.integration.base.BaseIntegrationTest;
+import com.technokratos.integration.BaseIntegrationTest;
 import com.technokratos.model.Notification;
 import com.technokratos.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;

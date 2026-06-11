@@ -1,4 +1,4 @@
-package com.technokratos.integration.base;
+package com.technokratos.integration;
 
 import com.technokratos.config.TestContainersConfig;
 import org.springframework.boot.test.context.SpringBootTest;

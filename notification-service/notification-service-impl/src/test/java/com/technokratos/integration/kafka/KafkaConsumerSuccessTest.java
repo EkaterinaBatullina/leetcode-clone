@@ -1,7 +1,8 @@
 package com.technokratos.integration.kafka;
 
 import com.technokratos.event.UserRegisteredEvent;
-import com.technokratos.integration.base.BaseIntegrationTest;
+import com.technokratos.integration.BaseIntegrationTest;
+import com.technokratos.integration.BaseKafkaIntegrationTest;
 import com.technokratos.model.Notification;
 import com.technokratos.repository.NotificationRepository;
 import org.awaitility.Awaitility;
@@ -11,34 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.test.utils.ContainerTestUtils;
 
 import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class KafkaConsumerSuccessTest extends BaseIntegrationTest {
-    @Autowired
-    private NotificationRepository repository;
-    @Autowired
-    private KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
-    @Autowired
-    private KafkaListenerEndpointRegistry registry;
-
-    @BeforeEach
-    void setup() {
-        repository.deleteAll();
-
-        for (MessageListenerContainer container : registry.getListenerContainers()) {
-            container.start();
-            try {
-                org.springframework.kafka.test.utils.ContainerTestUtils
-                        .waitForAssignment(container, 1);
-            } catch (Exception e) {
-
-            }
-        }
-    }
+public class KafkaConsumerSuccessTest extends BaseKafkaIntegrationTest {
 
     @Test
     void consumeUserRegisteredEvent_success() throws Exception {

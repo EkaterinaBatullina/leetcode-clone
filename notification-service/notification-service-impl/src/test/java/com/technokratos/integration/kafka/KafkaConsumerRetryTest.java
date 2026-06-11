@@ -2,49 +2,25 @@ package com.technokratos.integration.kafka;
 
 import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.DuplicateEventException;
-import com.technokratos.integration.base.BaseIntegrationTest;
+import com.technokratos.integration.BaseKafkaIntegrationTest;
 import com.technokratos.service.NotificationServiceImpl;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.MessageListenerContainer;
 
 import java.time.Duration;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
-public class KafkaConsumerRetryTest extends BaseIntegrationTest {
-    @Autowired
-    private KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
-    @Autowired
-    private KafkaListenerEndpointRegistry registry;
-
+public class KafkaConsumerRetryTest extends BaseKafkaIntegrationTest {
     @SpyBean
     private NotificationServiceImpl service;
 
-    @BeforeEach
-    void startKafka() {
-        for (MessageListenerContainer container : registry.getListenerContainers()) {
-            container.start();
-            try {
-                // Жестко ждем партиции для основного топика, чтобы консьюмер успел проснуться
-                org.springframework.kafka.test.utils.ContainerTestUtils
-                        .waitForAssignment(container, 1);
-            } catch (Exception e) {
-                // Игнорируем DLT контейнер, если у него нет партиций на старте
-            }
-        }
-    }
-
-    @org.junit.jupiter.api.AfterEach
+    @AfterEach
     void tearDown() {
-        // Сбрасываем стабы вызовов между тестовыми методами
-        org.mockito.Mockito.reset(service);
+        reset(service);
     }
 
     @Test
@@ -62,15 +38,17 @@ public class KafkaConsumerRetryTest extends BaseIntegrationTest {
                 .when(service)
                 .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
 
-        // Добавили .get() — отправка станет синхронной
         kafkaTemplate.send("user-registered-event", userId.toString(), event).get();
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(15))
                 .pollInterval(Duration.ofMillis(300))
                 .untilAsserted(() -> {
-                    verify(service, atLeast(1))
-                            .saveUserRegisteredEvent(any());
+                    Awaitility.await()
+                            .atMost(Duration.ofSeconds(15))
+                            .untilAsserted(() ->
+                                    verify(service, times(3))
+                                            .saveUserRegisteredEvent(any()));
 
                     verify(service, never())
                             .sendWelcomeNotification(any());
@@ -92,14 +70,13 @@ public class KafkaConsumerRetryTest extends BaseIntegrationTest {
                 .when(service)
                 .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
 
-        // Добавили .get() — отправка станет синхронной
         kafkaTemplate.send("user-registered-event", userId.toString(), event).get();
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(300))
                 .untilAsserted(() -> {
-                    verify(service, atLeastOnce())
+                    verify(service, times(1))
                             .saveUserRegisteredEvent(any());
 
                     verify(service, never())
