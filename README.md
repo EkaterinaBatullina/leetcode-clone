@@ -157,6 +157,11 @@
 - восстановление обработки после аварийных завершений приложения
 
 ---
+## Database Schema (User Service)
+
+![](docs/screenshot/test-coverage-screenshot/user-service-schema.png)
+
+---
 
 ### Observability & Logging (Spring AOP)
 
