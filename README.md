@@ -100,9 +100,28 @@
 
 ---
 
-## Тестовое покрытие:
+## Метрики и мониторинг
 
-![](docs/screenshot/test-coverage-screenshot/notification-service-test.png)
+Для мониторинга работоспособности и производительности отправки в рантайме реализован кастомный сервис метрик на базе **Micrometer / Prometheus**. 
+
+---
+
+## Инфраструктура сбора метрик (Prometheus)
+
+![](monitoring/screenshot/prometheus_targets_status.png)
+
+**Интерфейс Prometheus Target Health:** успешная регистрация джоб `user-service` / `notification-service` и зеленый статус `UP` при сборе метрик с эндпоинтов `/actuator/prometheus`.
+
+---
+
+## Визуализация метрик (Grafana)
+
+![](monitoring/screenshot/grafana_notification_service_dashboard.png)
+
+Дашборд **Notification Service Metrics** отображает ключевые показатели работы сервиса:
+- Длительность отправки уведомлений (`notification_send_duration_seconds_sum`)
+- Количество успешных доставок (`notification_sent_total`)
+- Количество ошибок отправки (`notification_failed_total`)
 
 ---
 
