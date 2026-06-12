@@ -44,15 +44,10 @@ public class KafkaConsumerRetryTest extends BaseKafkaIntegrationTest {
                 .atMost(Duration.ofSeconds(15))
                 .pollInterval(Duration.ofMillis(300))
                 .untilAsserted(() -> {
-                    Awaitility.await()
-                            .atMost(Duration.ofSeconds(15))
-                            .untilAsserted(() ->
-                                    verify(service, times(3))
-                                            .saveUserRegisteredEvent(any()));
-
-                    verify(service, never())
-                            .sendWelcomeNotification(any());
+                    verify(service, times(3)).saveUserRegisteredEvent(any(UserRegisteredEvent.class));
+                    verify(service, never()).sendWelcomeNotification(any());
                 });
+
     }
 
     @Test

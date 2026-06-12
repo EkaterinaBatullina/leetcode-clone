@@ -64,10 +64,12 @@ public class KafkaConsumer {
             groupId = "notification-dlt-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void consumeDLQ(UserRegisteredEvent event,
-                           @Header(KafkaHeaders.DLT_EXCEPTION_MESSAGE) String errorMessage,
-                           @Header(KafkaHeaders.DLT_EXCEPTION_FQCN) String errorClass,
-                           @Header(KafkaHeaders.DLT_ORIGINAL_TOPIC) String originalTopic) {
+    public void consumeDLQ(
+            UserRegisteredEvent event,
+            @Header(name = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String errorMessage,
+            @Header(name = KafkaHeaders.DLT_EXCEPTION_FQCN, required = false) String errorClass,
+            @Header(name = KafkaHeaders.DLT_ORIGINAL_TOPIC, required = false) String originalTopic
+    ) {
         log.error(
                 "DLT event failed. topic={}, userId={}, error={}, message={}",
                 originalTopic,

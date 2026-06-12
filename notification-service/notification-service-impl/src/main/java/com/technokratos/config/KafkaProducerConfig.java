@@ -1,6 +1,7 @@
 package com.technokratos.config;
 
-import com.technokratos.config.property.KafkaProperties;
+import com.technokratos.config.property.KafkaProducerProperties;
+import com.technokratos.config.property.KafkaCommonProperties;
 import com.technokratos.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -16,15 +17,16 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
-    private final KafkaProperties properties;
+    private final KafkaCommonProperties kafkaProperties;
+    private final KafkaProducerProperties kafkaProducerProperties;
 
     @Bean
     public Map<String, Object> producerConfigs() {
         Map<String, Object> producerConfigs = new HashMap<>();
-        producerConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
-        producerConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, properties.getKeySerializer());
-        producerConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, properties.getValueSerializer());
-        producerConfigs.put(ProducerConfig.CLIENT_ID_CONFIG, properties.getClientId());
+        producerConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        producerConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProducerProperties.getKeySerializer());
+        producerConfigs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, kafkaProducerProperties.getValueSerializer());
+        producerConfigs.put(ProducerConfig.CLIENT_ID_CONFIG, kafkaProducerProperties.getClientId());
         return producerConfigs;
     }
 

@@ -1,21 +1,28 @@
 spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:notification-test-group}
-    auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET}
-    enable-auto-commit: ${SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT:false}
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-    trusted-packages: com.technokratos
-    default-type: com.technokratos.event.UserRegisteredEvent
-    client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID}
+
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:notification-test-group}
+      auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET:earliest}
+      enable-auto-commit: ${SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT:false}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.technokratos"
+        spring.json.value.default.type: "com.technokratos.event.UserRegisteredEvent"
+        spring.json.type.mapping: ${KAFKA_TYPE_MAPPINGS:user_registered:com.technokratos.event.UserRegisteredEvent}
+
+    producer:
+      client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID:notification-producer}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
     listener:
-      auto-startup:true
+      auto-startup: true
+
     topic:
-      user-registered: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
-    type-mappings: ${KAFKA_TYPE_MAPPINGS}
+      user-registered: ${KAFKA_USER_REGISTERED_TOPIC_NAME:user-registered-event}
 
   data:
     mongodb:

@@ -1,9 +1,10 @@
 package com.technokratos.config;
 
-import com.technokratos.config.property.KafkaProperties;
+import com.technokratos.config.property.KafkaConsumerProperties;
+import com.technokratos.config.property.KafkaListenerProperties;
+import com.technokratos.config.property.KafkaCommonProperties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -20,15 +21,19 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
-    private final KafkaProperties kafkaProperties;
+    private final KafkaCommonProperties kafkaProperties;
+    private final KafkaConsumerProperties kafkaConsumerProperties;
+    private final KafkaListenerProperties kafkaListenerProperties;
 
     @Bean
     public Map<String, Object> consumerConfig() {
         Map<String, Object> consumerConfig = new HashMap<>();
         consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getKeyDeserializer());
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaProperties.getValueDeserializer());
-        consumerConfig.put(JsonDeserializer.TRUSTED_PACKAGES, kafkaProperties.getTrustedPackages());
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaConsumerProperties.getKeyDeserializer());
+        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaConsumerProperties.getValueDeserializer());
+        if (kafkaConsumerProperties.getProperties() != null) {
+            consumerConfig.putAll(kafkaConsumerProperties.getProperties());
+        }
 
         /*
          * Сопоставление значения Kafka-заголовка "__TypeId__"
@@ -37,10 +42,8 @@ public class KafkaConsumerConfig {
          * Позволяет использовать единый consumer для разных типов сообщений
          * без передачи полного имени класса в payload.
          */
-        consumerConfig.put(JsonDeserializer.TYPE_MAPPINGS, kafkaProperties.getTypeMappings());
-
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getGroupId());
-        consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, kafkaProperties.isEnableAutoCommit());
+        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerProperties.getGroupId());
+        consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, kafkaConsumerProperties.isEnableAutoCommit());
         return consumerConfig;
     }
 
@@ -64,7 +67,7 @@ public class KafkaConsumerConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
 
-        factory.setAutoStartup(kafkaProperties.isListenerAutoStartup());
+        factory.setAutoStartup(kafkaListenerProperties.isAutoStartup());
 
         /*
          * Подтверждение сообщения выполняется вручную.
