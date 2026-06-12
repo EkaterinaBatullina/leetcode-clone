@@ -107,7 +107,7 @@ public interface UserApi {
             description = "Deletes the authenticated user account.",
             responses = {
                     @ApiResponse(
-                            responseCode = "200",
+                            responseCode = "204",
                             description = "User deleted successfully"
                     ),
                     @ApiResponse(
@@ -129,7 +129,7 @@ public interface UserApi {
             ),
             responses = {
                     @ApiResponse(
-                            responseCode = "200",
+                            responseCode = "204",
                             description = "User updated successfully"
                     ),
                     @ApiResponse(
