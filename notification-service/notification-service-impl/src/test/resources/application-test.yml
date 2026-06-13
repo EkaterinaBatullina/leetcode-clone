@@ -15,6 +15,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.technokratos"
+        spring.json.use.type.headers: false
         spring.json.value.default.type: "com.technokratos.event.UserRegisteredEvent"
         spring.json.type.mapping: ${KAFKA_TYPE_MAPPINGS:user_registered:com.technokratos.event.UserRegisteredEvent}
 

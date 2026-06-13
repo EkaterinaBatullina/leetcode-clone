@@ -1,5 +1,6 @@
 package com.technokratos.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.technokratos.config.property.KafkaConsumerProperties;
 import com.technokratos.config.property.KafkaListenerProperties;
 import com.technokratos.config.property.KafkaCommonProperties;
@@ -8,12 +9,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,57 +26,42 @@ public class KafkaConsumerConfig {
 
     @Bean
     public Map<String, Object> consumerConfig() {
-        Map<String, Object> consumerConfig = new HashMap<>();
-        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, kafkaConsumerProperties.getKeyDeserializer());
-        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, kafkaConsumerProperties.getValueDeserializer());
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+               kafkaConsumerProperties.getKeyDeserializer());
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                kafkaConsumerProperties.getValueDeserializer());
+
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerProperties.getGroupId());
+        config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
         if (kafkaConsumerProperties.getProperties() != null) {
-            consumerConfig.putAll(kafkaConsumerProperties.getProperties());
+            config.putAll(kafkaConsumerProperties.getProperties());
         }
 
-        /*
-         * Сопоставление значения Kafka-заголовка "__TypeId__"
-         * с конкретным Java-классом события.
-         *
-         * Позволяет использовать единый consumer для разных типов сообщений
-         * без передачи полного имени класса в payload.
-         */
-        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerProperties.getGroupId());
-        consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, kafkaConsumerProperties.isEnableAutoCommit());
-        return consumerConfig;
+        return config;
     }
 
     @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
-        DefaultKafkaConsumerFactory<String, Object> factory =
-                new DefaultKafkaConsumerFactory<>(consumerConfig());
-
-        JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>();
-
-        ErrorHandlingDeserializer<Object> errorHandlingDeserializer =
-                new ErrorHandlingDeserializer<>(jsonDeserializer);
-
-        factory.setValueDeserializer(errorHandlingDeserializer);
-        return factory;
+    public ConsumerFactory<String, String> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfig());
     }
 
     @Bean
-    public KafkaListenerContainerFactory<?> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+            ConsumerFactory<String, String> consumerFactory,
+            ObjectMapper objectMapper) {
+
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-
+        factory.setConsumerFactory(consumerFactory);
         factory.setAutoStartup(kafkaListenerProperties.isAutoStartup());
 
-        /*
-         * Подтверждение сообщения выполняется вручную.
-         *
-         * Offset фиксируется только после успешной обработки события,
-         * что позволяет повторно получить сообщение при ошибке
-         * до момента acknowledge().
-         */
-        factory.getContainerProperties()
-                .setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setRecordMessageConverter(new StringJsonMessageConverter(objectMapper));
+
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         return factory;
     }
 }

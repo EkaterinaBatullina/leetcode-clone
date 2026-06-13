@@ -2,7 +2,6 @@ package com.technokratos.config;
 
 import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.config.property.KafkaCommonProperties;
-import com.technokratos.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.context.annotation.Bean;
@@ -31,12 +30,12 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, UserRegisteredEvent> producerFactory() {
+    public ProducerFactory<String, Object> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate() {
+    public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

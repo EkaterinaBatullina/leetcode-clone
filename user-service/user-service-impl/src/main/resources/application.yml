@@ -16,7 +16,7 @@ spring:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
     client-id: ${SPRING_KAFKA_PRODUCER_USER_SERVICE_CLIENT_ID}
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
     user-registered-topic: ${KAFKA_USER_REGISTERED_TOPIC_NAME}
     user-registered-token: ${KAFKA_USER_REGISTERED_TOKEN_NAME}
 

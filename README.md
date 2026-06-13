@@ -97,9 +97,28 @@
 
 ---
 
-## Получение письма после регистрации:
+## Верификация доставки Email (SMTP):
 
-![](docs/screenshot/email-notification-screenshot/step5.png)
+Пример успешной генерации и отправки письма на электронную почту зарегистрировавшегося пользователя:
+
+![](docs/screenshot/email-notification-screenshot/email-send.png)
+
+---
+
+## Swagger UI:
+
+Пример выполнения запроса к эндпоинту `GET /api/v1/notifications/user/{userId}` для получения уведомлений пользователя, прошедшего регистрацию:
+
+![](docs/screenshot/email-notification-screenshot/notification-service-getByUserId.png)
+
+---
+
+## MongoDB:
+
+Состояние коллекции `notification` после успешной регистрации пользователя:
+
+![](docs/screenshot/email-notification-screenshot/mongo-2.png)
+![](docs/screenshot/email-notification-screenshot/mongo-1.png)
 
 ---
 

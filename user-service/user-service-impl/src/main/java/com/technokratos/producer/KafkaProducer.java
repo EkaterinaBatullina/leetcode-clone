@@ -16,7 +16,7 @@ import java.util.concurrent.Executor;
 @Component
 @RequiredArgsConstructor
 public class KafkaProducer {
-    private final KafkaTemplate<String, Object> template;
+    private final KafkaTemplate<String, String> template;
     private final Executor outboxExecutor;
 
     /*
@@ -30,7 +30,7 @@ public class KafkaProducer {
      * без добавления отдельных producer-ов под каждый тип сообщения.
      */
     public void publishEvent(OutboxEventEntity entity, Runnable onSuccess, Consumer<Throwable> onFailure) {
-        ProducerRecord<String, Object> record = new ProducerRecord<>(
+        ProducerRecord<String, String> record = new ProducerRecord<>(
                 entity.getTopic(),
                 entity.getAggregateId(),
                 entity.getPayload()
@@ -45,10 +45,7 @@ public class KafkaProducer {
          * Такой подход позволяет передавать в payload только данные события,
          * а логику выбора конкретного класса оставлять на стороне consumer.
          */
-        record.headers().add(
-                "__TypeId__",
-                entity.getType().getBytes(StandardCharsets.UTF_8)
-        );
+        record.headers().add("__TypeId__", entity.getType().getBytes(StandardCharsets.UTF_8));
 
         /*
          * Callback-и выполняются в отдельном executor, чтобы исключить

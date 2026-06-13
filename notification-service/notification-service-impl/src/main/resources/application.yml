@@ -4,11 +4,12 @@ spring:
 
     consumer:
       group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:notification-test-group}
-      auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET:earliest}
+      auto-offset-reset: ${SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET:latest}
       enable-auto-commit: ${SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT:false}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
+        spring.json.header.type: "id"
         spring.json.trusted.packages: "com.technokratos"
         spring.json.value.default.type: "com.technokratos.event.UserRegisteredEvent"
         spring.json.type.mapping: ${KAFKA_TYPE_MAPPINGS:user_registered:com.technokratos.event.UserRegisteredEvent}
