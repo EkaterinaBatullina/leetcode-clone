@@ -28,6 +28,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}?authSource=${MONGO_DATABASE}
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -36,6 +37,12 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWK_SET_URL:http://user-service:8080/.well-known/jwks.json}
 
 springdoc:
   api-docs:
@@ -48,3 +55,9 @@ management:
     web:
       exposure:
         include: prometheus,health,info
+
+logging:
+  level:
+    root: info
+    org.apache.kafka: info
+    org.apache.kafka.clients: info

@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +26,8 @@ import java.util.UUID;
         description = "Endpoints for viewing user notifications and their delivery status"
 )
 @RequestMapping("/api/v1/notifications")
+@SecurityRequirement(name = "bearerAuth")
+@PreAuthorize("hasRole('ADMIN')")
 public interface NotificationApi {
 
     @Operation(
@@ -38,14 +42,9 @@ public interface NotificationApi {
                                     schema = @Schema(implementation = NotificationResponse.class)
                             )
                     ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Invalid status value"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Unauthorized"
-                    )
+                    @ApiResponse(responseCode = "400", description = "Invalid status value"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden, requires ADMIN role")
             }
     )
     @GetMapping("/status/{status}")
@@ -65,14 +64,9 @@ public interface NotificationApi {
                                     schema = @Schema(implementation = NotificationResponse.class)
                             )
                     ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Invalid userId format"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Unauthorized"
-                    )
+                    @ApiResponse(responseCode = "400", description = "Invalid userId format"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden, requires ADMIN role")
             }
     )
     @GetMapping("/user/{userId}")
