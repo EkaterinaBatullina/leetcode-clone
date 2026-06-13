@@ -17,7 +17,7 @@ spring:
     producer:
       client-id: ${SPRING_KAFKA_PRODUCER_NOTIFICATION_SERVICE_CLIENT_ID:notification-producer}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
     listener:
       auto-startup: true

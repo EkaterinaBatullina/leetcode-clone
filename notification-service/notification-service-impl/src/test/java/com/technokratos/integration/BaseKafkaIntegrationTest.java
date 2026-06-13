@@ -1,6 +1,6 @@
 package com.technokratos.integration;
 
-import com.technokratos.event.UserRegisteredEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.technokratos.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,9 @@ public abstract class BaseKafkaIntegrationTest extends BaseIntegrationTest {
     @Autowired
     protected NotificationRepository repository;
     @Autowired
-    protected KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
+    protected KafkaTemplate<String, String> kafkaTemplate;
+    @Autowired
+    protected ObjectMapper objectMapper;
     @Autowired
     private KafkaListenerEndpointRegistry registry;
 

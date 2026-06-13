@@ -4,6 +4,7 @@ import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.DuplicateEventException;
 import com.technokratos.integration.BaseKafkaIntegrationTest;
 import com.technokratos.service.NotificationServiceImpl;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +35,24 @@ public class KafkaConsumerRetryTest extends BaseKafkaIntegrationTest {
                 "test@gmail.com"
         );
 
+        String rawJson = objectMapper.writeValueAsString(event);
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(
+                "user-registered-event",
+                userId.toString(),
+                rawJson
+        );
+
+        record.headers().add(
+                "__TypeId__",
+                "user_registered".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
         doThrow(new RuntimeException("service exception"))
                 .when(service)
                 .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
 
-        kafkaTemplate.send("user-registered-event", userId.toString(), event).get();
+        kafkaTemplate.send(record).get();
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(15))
@@ -47,7 +61,6 @@ public class KafkaConsumerRetryTest extends BaseKafkaIntegrationTest {
                     verify(service, times(3)).saveUserRegisteredEvent(any(UserRegisteredEvent.class));
                     verify(service, never()).sendWelcomeNotification(any());
                 });
-
     }
 
     @Test
@@ -61,21 +74,31 @@ public class KafkaConsumerRetryTest extends BaseKafkaIntegrationTest {
                 "test@gmail.com"
         );
 
+        String rawJson = objectMapper.writeValueAsString(event);
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(
+                "user-registered-event",
+                userId.toString(),
+                rawJson
+        );
+
+        record.headers().add(
+                "__TypeId__",
+                "user_registered".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
         doThrow(new DuplicateEventException("duplicate event"))
                 .when(service)
                 .saveUserRegisteredEvent(any(UserRegisteredEvent.class));
 
-        kafkaTemplate.send("user-registered-event", userId.toString(), event).get();
+        kafkaTemplate.send(record).get();
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(300))
                 .untilAsserted(() -> {
-                    verify(service, times(1))
-                            .saveUserRegisteredEvent(any());
-
-                    verify(service, never())
-                            .sendWelcomeNotification(any());
+                    verify(service, times(1)).saveUserRegisteredEvent(any(UserRegisteredEvent.class));
+                    verify(service, never()).sendWelcomeNotification(any());
                 });
     }
 }

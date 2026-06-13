@@ -1,18 +1,11 @@
 package com.technokratos.integration.kafka;
 
 import com.technokratos.event.UserRegisteredEvent;
-import com.technokratos.integration.BaseIntegrationTest;
 import com.technokratos.integration.BaseKafkaIntegrationTest;
 import com.technokratos.model.Notification;
-import com.technokratos.repository.NotificationRepository;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.MessageListenerContainer;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -33,14 +26,26 @@ public class KafkaConsumerSuccessTest extends BaseKafkaIntegrationTest {
                 expectedEmail
         );
 
-        kafkaTemplate.send("user-registered-event", expectedUserId.toString(), event).get();
+        String rawJson = objectMapper.writeValueAsString(event);
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(
+                "user-registered-event",
+                expectedUserId.toString(),
+                rawJson
+        );
+
+        record.headers().add(
+                "__TypeId__",
+                "user_registered".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        kafkaTemplate.send(record).get();
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(300))
                 .untilAsserted(() -> {
                     var allNotifications = repository.findAll();
-
                     assertFalse(allNotifications.isEmpty(), "Репозиторий MongoDB пуст!");
 
                     Notification savedNotification = allNotifications.get(0);
