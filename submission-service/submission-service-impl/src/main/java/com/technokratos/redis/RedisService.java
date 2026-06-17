@@ -22,7 +22,8 @@ public class RedisService {
             String json = objectMapper.writeValueAsString(response);
             redis.opsForList().rightPush(RedisKeysUtil.submissionResponses(submissionId), json);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("error serializing Judge0Response", e);
+            throw new IllegalStateException(
+                    "Error serializing Judge0Response to JSON format for submission: %s".formatted(submissionId), e);
         }
     }
 
@@ -41,7 +42,8 @@ public class RedisService {
                     try {
                         return objectMapper.readValue(json, Judge0Response.class);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        throw new IllegalArgumentException(
+                                "Failed to deserialize Judge0Response from cache for submission: %s".formatted(submissionId), e);
                     }
                 }).toList();
     }

@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(UserRepositoryImpl.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles(profiles = "test")
-public class UserRepositoryTest {
+class UserRepositoryTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
     @Autowired

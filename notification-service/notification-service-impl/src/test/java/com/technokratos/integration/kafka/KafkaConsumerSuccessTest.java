@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class KafkaConsumerSuccessTest extends BaseKafkaIntegrationTest {
+class KafkaConsumerSuccessTest extends BaseKafkaIntegrationTest {
 
     @Test
     void consumeUserRegisteredEvent_success() throws Exception {

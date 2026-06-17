@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(OutboxRepositoryImpl.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-public class OutboxRepositoryTest {
+class OutboxRepositoryTest {
 
     @Autowired
     OutboxRepositoryImpl repository;

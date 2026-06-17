@@ -17,8 +17,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -29,19 +31,27 @@ public class JwtConfig {
     private final KeyProperties keyProperties;
 
     @Bean
-    public RSAPrivateKey rsaPrivateKey() throws Exception {
-        byte[] decoded = Base64.getDecoder().decode(keyProperties.getPrivateKey());
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decoded);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+    public RSAPrivateKey rsaPrivateKey() {
+        try {
+            byte[] decoded = Base64.getDecoder().decode(keyProperties.getPrivateKey());
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Failed to initialize RSA private key from properties", e);
+        }
     }
 
     @Bean
-    public RSAPublicKey rsaPublicKey() throws Exception {
-        byte[] decoded = Base64.getDecoder().decode(keyProperties.getPublicKey());
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+    public RSAPublicKey rsaPublicKey() {
+        try {
+            byte[] decoded = Base64.getDecoder().decode(keyProperties.getPublicKey());
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Failed to initialize RSA public key from properties", e);
+        }
     }
 
     @Bean

@@ -24,12 +24,15 @@ public class Judge0ErrorDecoder implements ErrorDecoder {
                 log.error("judge0 error body: {}", body);
                 JsonNode jsonNode = objectMapper.readTree(body);
                 String message = jsonNode.has("message") ? jsonNode.get("message").asText() : "unknown error";
-                return new RuntimeException("judge0 error (" + response.status() + "): " + message);
+                return new IllegalStateException(
+                        "Judge0 API returned error status %d with message: %s".formatted(response.status(), message));
             } else {
-                return new RuntimeException("judge0 error (" + response.status() + "): empty response body");
+                return new IllegalStateException(
+                        "Judge0 HTTP request failed with status %d: empty response body".formatted(response.status()));
             }
         } catch (Exception e) {
-            return new RuntimeException("judge0 error (" + response.status() + "): failed to parse error", e);
+            return new IllegalStateException(
+                    "Critical failure while decoding Judge0 response with status %d: invalid JSON format".formatted(response.status()), e);
         }
     }
 }

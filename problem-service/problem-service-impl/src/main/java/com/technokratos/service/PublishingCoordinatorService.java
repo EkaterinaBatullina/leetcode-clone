@@ -24,9 +24,9 @@ public class PublishingCoordinatorService {
         CompletableFuture<PublishStatus> ackFuture = new CompletableFuture<>();
         publishAckMap.put(request.problemId(), ackFuture);
         kafkaProducerService.sendEventToPublishTestcasesTopic(request);
-        CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS).execute(() -> {
-            ackFuture.complete(PublishStatus.FAILED);
-        });
+        CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS).execute(() ->
+            ackFuture.complete(PublishStatus.FAILED)
+        );
         return ackFuture;
     }
 

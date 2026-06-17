@@ -30,7 +30,7 @@ public class KafkaProducer {
      * без добавления отдельных producer-ов под каждый тип сообщения.
      */
     public void publishEvent(OutboxEventEntity entity, Runnable onSuccess, Consumer<Throwable> onFailure) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(
+        ProducerRecord<String, String> kafkaRecord = new ProducerRecord<>(
                 entity.getTopic(),
                 entity.getAggregateId(),
                 entity.getPayload()
@@ -45,7 +45,7 @@ public class KafkaProducer {
          * Такой подход позволяет передавать в payload только данные события,
          * а логику выбора конкретного класса оставлять на стороне consumer.
          */
-        record.headers().add("__TypeId__", entity.getType().getBytes(StandardCharsets.UTF_8));
+        kafkaRecord.headers().add("__TypeId__", entity.getType().getBytes(StandardCharsets.UTF_8));
 
         /*
          * Callback-и выполняются в отдельном executor, чтобы исключить
@@ -59,7 +59,7 @@ public class KafkaProducer {
          * Это допустимо, поскольку консюмер отслеживает DuplicateKeyException
          * для идемпотентной обработки событий.
          */
-        template.send(record)
+        template.send(kafkaRecord)
                 .thenAcceptAsync(result -> {
                     log.info("Event sent! Topic: {}, Offset: {}", entity.getTopic(), result.getRecordMetadata().offset());
                     onSuccess.run();

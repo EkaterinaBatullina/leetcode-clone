@@ -24,11 +24,10 @@ public class StatisticEntity {
     }
 }
 
-/*
-{
-        "userId": "e3f9f8e4-ec3e-4a57-b1c4-51b8a1cd8c8f",
-        "difficulty": "medium",
-        "status": "success", или "failure"
-        "isFirstSuccessfulAttempt": true
-        }
+/**
+ * "userId": "e3f9f8e4-ec3e-4a57-b1c4-51b8a1cd8c8f",
+ *  "difficulty": "medium",
+ *  "status": "success", или "failure"
+ *  "isFirstSuccessfulAttempt": true
+ *
 */

@@ -4,8 +4,6 @@ import com.nimbusds.jose.util.Pair;
 import com.technokratos.config.property.SecurityProperties;
 import com.technokratos.model.UserEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;

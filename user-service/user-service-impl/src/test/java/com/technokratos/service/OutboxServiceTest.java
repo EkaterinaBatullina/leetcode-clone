@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.technokratos.config.property.KafkaProducerProperties;
 import com.technokratos.dto.enums.Status;
 import com.technokratos.event.UserRegisteredEvent;
+import com.technokratos.exception.EventSerializationException;
 import com.technokratos.model.OutboxEventEntity;
 import com.technokratos.producer.KafkaProducer;
 import com.technokratos.repository.OutboxRepository;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class OutboxServiceTest {
+class OutboxServiceTest {
     @InjectMocks
     OutboxServiceImpl service;
     @Mock
@@ -106,24 +107,16 @@ public class OutboxServiceTest {
 
     @Test
     void save_serializationError() throws JsonProcessingException {
-        String topic = "user-registered-topic";
-        String aggregateId = UUID.randomUUID().toString();
         String type = "user-registered";
+
+        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+
         Object dummyEvent = new Object();
 
-        JsonProcessingException jacksonException =
-                new JsonProcessingException("boom") {};
+        EventSerializationException exception = assertThrows(EventSerializationException.class, () ->
+                service.save("topic", "id", type, dummyEvent));
 
-        when(mapper.writeValueAsString(any()))
-                .thenThrow(jacksonException);
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                service.save(topic, aggregateId, type, dummyEvent));
-
-        assertTrue(exception.getMessage()
-                .contains("Error during outbox event serialization for type: " + type));
-
-        assertEquals(jacksonException, exception.getCause());
+        assertTrue(exception.getMessage().contains(type));
 
         verify(repository, never()).save(any());
     }

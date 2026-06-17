@@ -27,7 +27,7 @@ public class SubmissionController implements SubmissionApi {
 
     @Override
     public void deleteById(String id) {
-
+        throw new UnsupportedOperationException("Deletion of submissions is not allowed in this service implementation");
     }
 
     @Override
@@ -37,6 +37,6 @@ public class SubmissionController implements SubmissionApi {
 
     @Override
     public void update(String id, SubmissionRequest submissionRequest) {
-
+        throw new UnsupportedOperationException("Direct full update of submission entity is not supported");
     }
 }

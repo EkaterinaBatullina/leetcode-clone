@@ -193,20 +193,18 @@ public class ProblemService implements BaseProblemService {
     private void dispatchRequest(RunRequest request, Action type) {
         String wrapper = getWrapper(request.problemId(), request.languageId());
         RunRequest finalRequest = (wrapper != null) ? wrapCodeRequest(request, wrapper) : request;
-        switch (type) {
-            case RUN -> {
-                if (wrapper != null) {
-                    kafkaProducerService.sendEventToRunWithWrapperTopic(finalRequest);
-                } else {
-                    kafkaProducerService.sendEventToRunTopic(finalRequest);
-                }
+
+        if (type == Action.RUN) {
+            if (wrapper != null) {
+                kafkaProducerService.sendEventToRunWithWrapperTopic(finalRequest);
+            } else {
+                kafkaProducerService.sendEventToRunTopic(finalRequest);
             }
-            case SUBMIT -> {
-                if (wrapper != null) {
-                    kafkaProducerService.sendEventToSubmitWithWrapperTopic(finalRequest);
-                } else {
-                    kafkaProducerService.sendEventToSubmitTopic(finalRequest);
-                }
+        } else if (type == Action.SUBMIT) {
+            if (wrapper != null) {
+                kafkaProducerService.sendEventToSubmitWithWrapperTopic(finalRequest);
+            } else {
+                kafkaProducerService.sendEventToSubmitTopic(finalRequest);
             }
         }
     }

@@ -13,7 +13,7 @@ public class SubmissionMetricsService {
 
     private final MeterRegistry meterRegistry;
 
-    public <T> T timeSubmissionProcessing(UUID problemId, UUID submissionId, SubmissionProcessor<T> processor) {
+    public <T> T timeSubmissionProcessing(UUID problemId, SubmissionProcessor<T> processor) {
         Timer.Sample sample = Timer.start(meterRegistry);
         try {
             return processor.process();

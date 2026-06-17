@@ -3,6 +3,7 @@ package com.technokratos.mapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.technokratos.dto.ArgumentDto;
+import com.technokratos.exception.ArgumentMappingException;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface ArgumentMapper {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
-            throw new RuntimeException("Failed to deserialize arguments JSON", e);
+            throw new ArgumentMappingException("Failed to deserialize arguments JSON", e);
         }
     }
 
@@ -24,7 +25,7 @@ public interface ArgumentMapper {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(arguments);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize arguments", e);
+            throw new ArgumentMappingException("Failed to serialize arguments List to JSON", e);
         }
     }
 }

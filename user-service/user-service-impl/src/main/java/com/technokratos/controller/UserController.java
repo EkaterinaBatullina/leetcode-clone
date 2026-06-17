@@ -59,12 +59,8 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<Void> patch(UserPartialRequest userPartialRequest) {
-
-        System.out.println("CONTROLLER DTO = " + userPartialRequest);
-
         userService.patch(userPartialRequest);
         return ResponseEntity.noContent().build();
-
     }
 
     @Override

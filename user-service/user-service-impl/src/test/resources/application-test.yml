@@ -12,7 +12,7 @@ spring:
         enabled: true
         change-log: classpath:/db/changelog/changelog-master.yml
     kafka:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers:  ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
         client-id: test-client
         user-registered-topic: user-registered-event
         user-registered-token: user_registered
@@ -29,3 +29,6 @@ oauth2:
             # Тестовые учётные данные для BasicAuthFilter.
             client-id: my-client-id
             client-secret: my-client-secret
+
+app:
+    scheduling.enabled: false

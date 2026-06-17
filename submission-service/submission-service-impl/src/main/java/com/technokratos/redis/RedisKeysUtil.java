@@ -1,5 +1,9 @@
 package com.technokratos.redis;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RedisKeysUtil {
 
     public static String submissionTokens(String submissionId) {

@@ -74,7 +74,7 @@ public class HttpJudge0Service implements BaseJudge0Service {
 
     @Override
     public void sendSubmission(RunRequest request, Action action) {
-
+        throw new UnsupportedOperationException("Single submission delivery is not supported in HttpJudge0Service");
     }
 
     @Async
@@ -82,7 +82,7 @@ public class HttpJudge0Service implements BaseJudge0Service {
         try {
             log.debug("sending batch: {}", objectMapper.writeValueAsString(new Judge0BatchRequest(batch)));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException("Invalid batch structure for submission inside debug log: %s".formatted(submissionId), e);
         }
         JsonNode response = client.sendBatch(properties.getApiKey(), properties.getApiHost(), new Judge0BatchRequest(batch));
         List<String> tokens = new ArrayList<>();

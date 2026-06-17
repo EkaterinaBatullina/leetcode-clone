@@ -1,7 +1,5 @@
 package com.technokratos.exception;
 
-import com.technokratos.exception.NotFoundServiceException;
-
 import java.util.UUID;
 
 public class UserNotFoundException extends NotFoundServiceException {

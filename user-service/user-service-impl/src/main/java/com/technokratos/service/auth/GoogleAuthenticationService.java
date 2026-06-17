@@ -37,7 +37,7 @@ public class GoogleAuthenticationService {
             return generateTokensAndSaveAuthorization(user, client);
         } catch (Exception e) {
             log.warn("Failed to login with Google token", e);
-            throw new BadCredentialsException("Invalid Google ID token");
+            throw new BadCredentialsException("Google authentication flow failed");
         }
     }
 
@@ -59,15 +59,13 @@ public class GoogleAuthenticationService {
 
             if (token == null) {
                 log.error("GoogleIdTokenVerifier returned null! Token could not be verified.");
-                throw new BadCredentialsException("Invalid Google ID token");
+                throw new BadCredentialsException("Google token verification failed: invalid signature or expired");
             }
 
-            GoogleIdToken.Payload payload = token.getPayload();
-
-            return payload;
+            return token.getPayload();
         } catch (Exception e) {
             log.error("Exception occurred while verifying Google ID token", e);
-            throw new BadCredentialsException("Invalid Google ID token", e);
+            throw new BadCredentialsException("Google token transport or parsing error", e);
         }
     }
 

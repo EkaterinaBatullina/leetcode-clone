@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.stream.Collectors;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -26,7 +24,7 @@ public class GlobalExceptionHandler {
                                                 fieldError.getField(),
                                                 fieldError.getCode(),
                                                 fieldError.getDefaultMessage()))
-                                        .collect(Collectors.toList()))
+                                        .toList())
                         .build());
     }
 

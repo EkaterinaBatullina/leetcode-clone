@@ -3,6 +3,7 @@ package com.technokratos.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.technokratos.dto.enums.Status;
+import com.technokratos.exception.EventSerializationException;
 import com.technokratos.model.OutboxEventEntity;
 import com.technokratos.producer.KafkaProducer;
 import com.technokratos.repository.OutboxRepository;
@@ -77,7 +78,7 @@ public class OutboxServiceImpl implements OutboxService {
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize outbox event. Type: {}, AggregateId: {}, Topic: {}",
                     type, aggregateId, topic, e);
-            throw new RuntimeException("Error during outbox event serialization for type: " + type, e);
+            throw new EventSerializationException("Error during outbox event serialization for type: " + type, e);
         }
     }
 }

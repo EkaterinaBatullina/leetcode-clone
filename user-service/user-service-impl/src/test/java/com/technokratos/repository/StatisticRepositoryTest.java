@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(StatisticRepositoryImpl.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles(profiles = "test")
-public class StatisticRepositoryTest {
+class StatisticRepositoryTest {
     @Autowired
     StatisticRepositoryImpl repository;
     @Autowired

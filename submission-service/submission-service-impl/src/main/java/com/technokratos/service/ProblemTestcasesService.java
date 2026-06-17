@@ -103,7 +103,6 @@ public class ProblemTestcasesService implements BaseProblemTestcasesService {
     @Override
     @Transactional
     public UUID create(PublishTestcasesRequest publishTestcasesRequest) {
-//        throw new RuntimeException("hiii i'm an exception");
         ProblemTestcases problemTestcases = new ProblemTestcases();
         List<Testcase> testcases = mapper.toEntity(publishTestcasesRequest.testcases());
         List<Testcase> visibleTestcases = testcases.stream().filter(Testcase::isVisible).toList();

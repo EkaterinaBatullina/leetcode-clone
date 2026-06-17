@@ -16,7 +16,10 @@ public class RapidApiFallbackFactory implements FallbackFactory<RapidApiJudge0Cl
             @Override
             public JsonNode sendBatch(String apiKey, String apiHost, Judge0BatchRequest request) {
                 log.error("rapid api fallback triggered: {}", cause.toString());
-                throw new RuntimeException("rapid api call failed", cause);
+                throw new IllegalStateException(
+                        "RapidAPI Judge0 client call failed due to fallback trigger: %s".formatted(cause.getMessage()),
+                        cause
+                );
             }
         };
 

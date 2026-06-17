@@ -5,10 +5,13 @@ import com.technokratos.entity.Problem;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProblemSpecifications {
 
     public static Specification<Problem> withDifficulties(List<Difficulty> difficulties) {

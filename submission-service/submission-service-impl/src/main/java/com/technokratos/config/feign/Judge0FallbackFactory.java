@@ -16,7 +16,10 @@ public class Judge0FallbackFactory implements FallbackFactory<Judge0Client> {
             @Override
             public JsonNode sendBatch(Judge0BatchRequest request) {
                 log.error("judge0 fallback triggered: {}", cause.toString());
-                throw new RuntimeException("judge0 api call failed", cause);
+                throw new IllegalStateException(
+                        "Judge0 API batch call failed due to fallback trigger: %s".formatted(cause.getMessage()),
+                        cause
+                );
             }
         };
     }

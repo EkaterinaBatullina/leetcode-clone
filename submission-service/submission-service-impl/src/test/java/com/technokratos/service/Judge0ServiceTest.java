@@ -84,14 +84,14 @@ class Judge0ServiceTest {
         verify(problemTestcasesService).getAllByProblemId(any(UUID.class));
         verify(judge0Client).sendBatch(any(Judge0BatchRequest.class));
         verify(valueOperations).set(
-                eq(RedisKeysUtil.submissionAction(submissionIdStr)),
-                eq("SUBMIT"),
-                eq(Duration.ofMinutes(10))
+                RedisKeysUtil.submissionAction(submissionIdStr),
+                "SUBMIT",
+                Duration.ofMinutes(10)
         );
         verify(valueOperations).set(
-                eq(RedisKeysUtil.submissionIsSingleRequest(submissionIdStr)),
-                eq("true"),
-                eq(Duration.ofMinutes(10))
+                RedisKeysUtil.submissionIsSingleRequest(submissionIdStr),
+                "true",
+                Duration.ofMinutes(10)
         );
         verify(submissionService).create(any(SubmissionRequest.class));
     }
@@ -119,13 +119,14 @@ class Judge0ServiceTest {
 
         // Verify
         verify(valueOperations).set(
-                eq(RedisKeysUtil.tokenToSubmission(token)),
-                eq(submissionId.toString()),
-                eq(Duration.ofMinutes(10))
+                RedisKeysUtil.tokenToSubmission(token),
+                submissionId.toString(),
+                Duration.ofMinutes(10)
         );
-        verify(listOperations).rightPushAll(
-                eq(RedisKeysUtil.submissionTokens(submissionId.toString())),
-                eq(List.of(token))
+        verify(valueOperations).set(
+                RedisKeysUtil.tokenToSubmission(token),
+                submissionId.toString(),
+                Duration.ofMinutes(10)
         );
 
     }

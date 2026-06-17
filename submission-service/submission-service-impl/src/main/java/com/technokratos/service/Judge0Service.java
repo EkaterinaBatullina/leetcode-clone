@@ -121,7 +121,9 @@ public class Judge0Service implements BaseJudge0Service {
         try {
             log.debug("sending batch: {}", objectMapper.writeValueAsString(new Judge0BatchRequest(batch)));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(
+                    "Invalid batch structure serialization for submission %s".formatted(submissionId), e
+            );
         }
         JsonNode response = client.sendBatch(new Judge0BatchRequest(batch));
         List<String> tokens = new ArrayList<>();

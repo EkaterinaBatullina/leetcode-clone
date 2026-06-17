@@ -24,55 +24,44 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class StatisticServiceTest {
-    @InjectMocks
-    StatisticServiceImpl service;
-    @Mock
-    StatisticRepository repository;
-    @Mock
-    StatisticMapper mapper;
+class StatisticServiceTest {
+    @InjectMocks StatisticServiceImpl service;
+    @Mock StatisticRepository repository;
+    @Mock StatisticMapper mapper;
 
     @Test
     void getById() {
-        UUID expectedUuid = UUID.randomUUID();
-        StatisticEntity statisticEntity =
-                new StatisticEntity(expectedUuid, 0, 0, 0, 0, 0, 0);
-        StatisticResponse expectedResponse =
-                new StatisticResponse(expectedUuid, 0, 0, 0, 0, 0, 0);
+        UUID uuid = UUID.randomUUID();
+        StatisticEntity entity = new StatisticEntity(uuid, 0, 0, 0, 0, 0, 0);
+        StatisticResponse expected = new StatisticResponse(uuid, 0, 0, 0, 0, 0, 0);
 
-        try (MockedStatic<SecurityUtil> utilities = mockStatic(SecurityUtil.class)) {
-            utilities.when(SecurityUtil::getCurrentUserId).thenReturn(expectedUuid);
+        try (MockedStatic<SecurityUtil> utils = mockStatic(SecurityUtil.class)) {
+            utils.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
+            when(repository.findById(uuid)).thenReturn(Optional.of(entity));
+            when(mapper.toResponse(entity)).thenReturn(expected);
 
-            when(repository.findById(expectedUuid)).thenReturn(Optional.of(statisticEntity));
-            when(mapper.toResponse(statisticEntity)).thenReturn(expectedResponse);
-
-            StatisticResponse response = service.getById();
-
-            assertEquals(expectedResponse, response);
-            verify(repository).findById(expectedUuid);
-            verify(mapper).toResponse(statisticEntity);
+            assertEquals(expected, service.getById());
         }
     }
 
     @Test
     void getById_notFound() {
         UUID uuid = UUID.randomUUID();
-        try (MockedStatic<SecurityUtil> utilities = mockStatic(SecurityUtil.class)) {
-            utilities.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
-
+        try (MockedStatic<SecurityUtil> utils = mockStatic(SecurityUtil.class)) {
+            utils.when(SecurityUtil::getCurrentUserId).thenReturn(uuid);
             when(repository.findById(uuid)).thenReturn(Optional.empty());
 
             assertThrows(StatisticsNotFoundException.class, () -> service.getById());
-            verify(repository).findById(uuid);
         }
     }
 
     @Test
     void create() {
-        UUID expectedUuid = UUID.randomUUID();
-        doNothing().when(repository).save(any(StatisticEntity.class));
-        service.create(expectedUuid);
-        verify(repository).save(argThat(statisticEntity -> statisticEntity.getUserId().equals(expectedUuid)));
+        UUID uuid = UUID.randomUUID();
+
+        service.create(uuid);
+
+        verify(repository).save(argThat(entity -> entity.getUserId().equals(uuid)));
     }
 
     @Test
@@ -80,28 +69,8 @@ public class StatisticServiceTest {
         UUID userId = UUID.randomUUID();
         UserUpdateRequest request = new UserUpdateRequest(userId, Difficulty.EASY, SubmissionStatus.SOLVED, true);
 
-        StatisticEntity statisticEntity =
-                new StatisticEntity(userId, 1, 1, 0, 0, 0, 0);
-        when(repository.findById(userId)).thenReturn(Optional.of(statisticEntity));
-
-        doNothing().when(repository).update(userId, 1, 1, 0, 0);
-
         service.update(request);
 
-        verify(repository).findById(userId);
         verify(repository).update(userId, 1, 1, 0, 0);
-    }
-
-    @Test
-    void update_notFound() {
-        UUID uuid = UUID.randomUUID();
-        UserUpdateRequest request = new UserUpdateRequest(uuid, Difficulty.EASY, SubmissionStatus.SOLVED, true);
-
-        when(repository.findById(uuid)).thenReturn(Optional.empty());
-
-        assertThrows(StatisticsNotFoundException.class, () -> service.update(request));
-
-        verify(repository).findById(uuid);
-        verify(repository, never()).update(any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
     }
 }

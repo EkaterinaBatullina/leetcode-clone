@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.messaging.Message;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -29,7 +30,7 @@ class KafkaProducerTest {
     @InjectMocks
     private KafkaProducer producer;
     @Mock
-    private KafkaTemplate<String, Object> template;
+    private KafkaTemplate<String, String> template;
 
     /*
      * Для unit-тестов используем синхронный executor.
@@ -127,7 +128,7 @@ class KafkaProducerTest {
                 .payload("{\"id\":\"1\"}")
                 .build();
 
-        SendResult<String, Object> sendResult = mock(SendResult.class);
+        SendResult<String, String> sendResult = mock(SendResult.class);
         RecordMetadata metadata = mock(RecordMetadata.class);
 
         when(sendResult.getRecordMetadata()).thenReturn(metadata);
@@ -136,7 +137,7 @@ class KafkaProducerTest {
         when(template.send(any(ProducerRecord.class)))
                 .thenReturn(CompletableFuture.completedFuture(sendResult));
 
-        ArgumentCaptor<ProducerRecord<String, Object>> captor =
+        ArgumentCaptor<ProducerRecord<String, String>> captor =
                 ArgumentCaptor.forClass(ProducerRecord.class);
 
         producer.publishEvent(
@@ -147,7 +148,7 @@ class KafkaProducerTest {
 
         verify(template).send(captor.capture());
 
-        ProducerRecord<String, Object> record = captor.getValue();
+        ProducerRecord<String, String> record = captor.getValue();
 
         Header header = record.headers().lastHeader("__TypeId__");
 
@@ -177,7 +178,7 @@ class KafkaProducerTest {
                 .payload("{\"id\":\"1\"}")
                 .build();
 
-        SendResult<String, Object> sendResult = mock(SendResult.class);
+        SendResult<String, String> sendResult = mock(SendResult.class);
         RecordMetadata metadata = mock(RecordMetadata.class);
 
         when(sendResult.getRecordMetadata()).thenReturn(metadata);
@@ -186,7 +187,7 @@ class KafkaProducerTest {
         when(template.send(any(ProducerRecord.class)))
                 .thenReturn(CompletableFuture.completedFuture(sendResult));
 
-        ArgumentCaptor<ProducerRecord<String, Object>> captor =
+        ArgumentCaptor<ProducerRecord<String, String>> captor =
                 ArgumentCaptor.forClass(ProducerRecord.class);
 
         producer.publishEvent(
@@ -197,7 +198,7 @@ class KafkaProducerTest {
 
         verify(template).send(captor.capture());
 
-        ProducerRecord<String, Object> record = captor.getValue();
+        ProducerRecord<String, String> record = captor.getValue();
 
         /*
          * Проверяем корректное формирование Kafka Record

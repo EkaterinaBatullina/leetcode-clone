@@ -10,7 +10,6 @@ import com.technokratos.dto.response.TokenCoupleResponse;
 import com.technokratos.event.UserRegisteredEvent;
 import com.technokratos.exception.UserNotFoundException;
 import com.technokratos.mapper.UserMapper;
-import com.technokratos.model.OutboxEventEntity;
 import com.technokratos.model.UserEntity;
 import com.technokratos.repository.UserRepository;
 import com.technokratos.service.auth.AuthenticationService;
